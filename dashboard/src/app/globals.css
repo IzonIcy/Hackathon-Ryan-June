@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Premium Enterprise Theme ─────────────────────────────────── */
+@theme inline {
+  --color-background: #050507;
+  --color-foreground: #f0f2f5;
+  --color-card: #0b0d12;
+  --color-card-hover: #10131a;
+  --color-card-border: #1a1d28;
+  --color-card-border-hover: #262a38;
+  --color-muted: #141821;
+  --color-muted-foreground: #7a8294;
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+  --color-primary-hover: #5558e6;
+  --color-primary-muted: rgba(99, 102, 241, 0.12);
+  --color-secondary: #181b26;
+  --color-secondary-foreground: #e4e7ed;
+  --color-accent: #06b6d4;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #f04438;
+  --color-destructive-muted: rgba(240, 68, 56, 0.12);
+  --color-warning: #f5a623;
+  --color-warning-muted: rgba(245, 166, 35, 0.12);
+  --color-success: #22c55e;
+  --color-success-muted: rgba(34, 197, 94, 0.12);
+  --color-info: #3b82f6;
+  --color-info-muted: rgba(59, 130, 246, 0.12);
+  --color-ring: #6366f1;
+  --color-sidebar: #07080c;
+  --color-sidebar-border: #181b26;
+  --color-sidebar-text: #5c6476;
+  --color-sidebar-text-active: #f0f2f5;
+  --color-chart-1: #6366f1;
+  --color-chart-2: #06b6d4;
+  --color-chart-3: #22c55e;
+  --color-chart-4: #f5a623;
+  --color-chart-5: #f04438;
+  --color-chart-grid: rgba(255, 255, 255, 0.04);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --animate-fade-in: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-down: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-scale-in: scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-spring-in: spring-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spring-in {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(99, 102, 241, 0.15); }
+  50% { box-shadow: 0 0 24px rgba(99, 102, 241, 0.3); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ─── Base ─────────────────────────────────────────────────────── */
+* {
+  border-color: var(--color-card-border);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.25);
+  color: #f0f2f5;
+}
+
+/* ─── Scrollbar ────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1a1d28; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #262a38; }
+
+/* ─── Glass Effects ────────────────────────────────────────────── */
+.glass {
+  background: rgba(11, 13, 18, 0.65);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid rgba(26, 29, 40, 0.7);
+}
+
+.glass-hover:hover {
+  background: rgba(16, 19, 26, 0.8);
+  backdrop-filter: blur(28px) saturate(1.3);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.glass-card {
+  background: rgba(11, 13, 18, 0.6);
+  backdrop-filter: blur(20px) saturate(1.1);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  border: 1px solid rgba(26, 29, 40, 0.6);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: rgba(16, 19, 26, 0.7);
+  backdrop-filter: blur(24px) saturate(1.2);
+  border-color: rgba(99, 102, 241, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Status Dots ──────────────────────────────────────────────── */
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.status-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  opacity: 0.2;
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+.status-dot.running { background: #22c55e; }
+.status-dot.running::after { background: #22c55e; }
+.status-dot.warning { background: #f5a623; }
+.status-dot.warning::after { background: #f5a623; }
+.status-dot.stopped { background: #f04438; }
+.status-dot.stopped::after { background: #f04438; }
+.status-dot.error { background: #f04438; }
+.status-dot.error::after { background: #f04438; }
+.status-dot.idle { background: #3b3f4f; }
+.status-dot.idle::after { display: none; }
+.status-dot.unknown { background: #5c6476; }
+.status-dot.unknown::after { display: none; }
+
+/* ─── Premium Focus Ring ───────────────────────────────────────── */
+.premium-ring {
+  outline: none;
+  transition: box-shadow 0.2s ease;
+}
+.premium-ring:focus-visible {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4), 0 0 20px -4px rgba(99, 102, 241, 0.15);
+}
+
+/* ─── Gradient Text ────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #f0f2f5 0%, #7a8294 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Subtle Grid Background ───────────────────────────────────── */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Number / Stat Value ──────────────────────────────────────── */
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+/* ─── Shimmer Loading ──────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+}

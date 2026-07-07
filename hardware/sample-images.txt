@@ -1,0 +1,7 @@
+put sample images here for the demo
+- spaghetti.jpg (3d printer failure)
+- good_print.jpg (normal print)
+- laser_smoke.jpg (laser cutter warning)
+- cnc_chatter.jpg (cnc warning)
+
+then upload them in the live view

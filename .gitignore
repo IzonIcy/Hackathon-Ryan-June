@@ -1,0 +1,19 @@
+# dont commit the database lol
+*.db
+*.db-shm
+*.db-wal
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.ruff_cache/
+
+# frontend
+frontend/node_modules/
+frontend/dist/
+
+# env
+.env
