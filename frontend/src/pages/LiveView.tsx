@@ -1,6 +1,7 @@
 // live view - camera + AI with alarm, desktop notifs, and live obs feed
 // less inline styles now cuz we got css variables and classes
-// still a bit scrappy cuz thats how we roll
+// still a bit scrappy cuz thats how we roll (no cap)
+// yo this takes pictures from ur webcam every 3 secs lol
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
@@ -23,14 +24,14 @@ function LiveView() {
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
 
-  // multi cam stuff
+  // multi cam stuff (bcuz one isnt enough apparently)
   const [cams, setCams] = useState<MediaDeviceInfo[]>([])
   const [selCam, setSelCam] = useState<string>('')
 
-  // live observation feed
+  // live observation feed (gets spammed pretty fast ngl)
   const [obs, setObs] = useState<{status: string, msg: string, conf: number, time: Date}[]>([])
 
-  // play a loud beep when things go wrong
+  // play a loud beep when things go wrong (scares everyone in the room)
   const beep = useCallback(() => {
     try {
       const ctx = new AudioContext()
@@ -50,7 +51,7 @@ function LiveView() {
     } catch (_) {}
   }, [])
 
-  // pop a desktop notification
+  // pop a desktop notification (annoying but useful)
   const popNotif = useCallback((m: string) => {
     try {
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -69,6 +70,7 @@ function LiveView() {
   }, [mid, camId])
 
   // request notif permission + enumerate cams + start cam
+  // TODO: this useEffect is a mess lol
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission()
@@ -99,7 +101,7 @@ function LiveView() {
     // eslint-disable-next-line
   }, [])
 
-  // switch camera
+  // switch camera (cuz u might wanna see a different angle)
   const swCam = useCallback(async (did: string) => {
     if (!did || did === selCam) return
     setSelCam(did); setErr('')
@@ -114,7 +116,7 @@ function LiveView() {
     } catch (e: any) { setErr('camera switch: ' + e.message) }
   }, [selCam])
 
-  // send frame to ai
+  // send frame to ai (the magic happens here)
   const send = useCallback(async (b64: string) => {
     if (!jid) return
     try {
@@ -132,6 +134,7 @@ function LiveView() {
     } catch (_) {}
   }, [jid, beep, popNotif])
 
+  // takes a snapshot from the video and sends it to the AI
   const snap = useCallback(() => {
     if (!vr.current || !cr.current || !jid) return
     const c = cr.current; const v = vr.current
@@ -140,6 +143,7 @@ function LiveView() {
     send(c.toDataURL('image/jpeg', 0.7).split(',')[1])
   }, [jid, send])
 
+  // starts watching (the fun begins)
   const go = async () => {
     try {
       const r = await fetch(`/api/sessions/start?machine_id=${mid}`, { method: 'POST' })
@@ -149,11 +153,12 @@ function LiveView() {
       }
       const d = await r.json()
       setJid(d.job_id); setWatch(true); setSt('watch'); setMsg(''); setObs([])
-      ir.current = window.setInterval(snap, 3000)
+      ir.current = window.setInterval(snap, 3000) // takes a pic every 3 secs lol
       setTimeout(snap, 500)
     } catch (e: any) { setErr('could not start: ' + e.message) }
   }
 
+  // stops watching (party's over)
   const stop = async () => {
     if (ir.current) clearInterval(ir.current)
     setWatch(false); setSt('off')
@@ -164,7 +169,7 @@ function LiveView() {
         window.dispatchEvent(new CustomEvent('session-changed'))
         n(`/reports/${jid}`)
       } catch (_) {
-        // even if it fails, still try to show the report
+        // even if it fails, still try to show the report (keep going fam)
         n(`/reports/${jid}`)
       }
     }
@@ -180,10 +185,10 @@ function LiveView() {
     <div>
       {err && <div className="error">{err}</div>}
 
-      {/* header with machine name + cam switcher + start/stop */}
+      {/* header with machine name + cam switcher + start/stop (the important stuff) */}
       <div className="card-header" style={{ marginBottom: 12, flexWrap: 'wrap' }}>
         <div>
-          <h2 className="page-title" style={{ margin: 0, fontSize: 18 }}>{nm || 'Live Monitoring'}</h2>
+          <h2 className="page-title" style={{ margin: 0, fontSize: 18 }}>{nm || 'Live Cam'}</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
             <span>📷 {cams.length} monitor{cams.length !== 1 ? 's' : ''}</span>
             {cams.length > 1 && (
@@ -199,13 +204,13 @@ function LiveView() {
         </div>
         <button className={`btn ${watch ? 'btn-danger' : 'btn-primary'}`}
           onClick={watch ? stop : go} style={{ fontSize: 14, padding: '8px 20px' }}>
-          {watch ? '■ Stop' : '▶ Start Watching'}
+          {watch ? '■ Stop!' : '▶ Start Watching!'}
         </button>
       </div>
 
       {/* main area: video + obs feed */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
-        {/* camera */}
+        {/* camera (the main attraction) */}
         <div style={{
           flex: watch && obs.length ? '1 1 60%' : '1 1 100%',
           background: '#000', borderRadius: 'var(--radius-lg)', overflow: 'hidden',
@@ -219,19 +224,19 @@ function LiveView() {
             <video ref={vr} autoPlay playsInline muted
               style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }} />
           )}
-          <canvas ref={cr} style={{ display: 'none' }} />
+          <canvas ref={cr} style={{ display: 'none' }} /> {/* hidden canvas for capturing frames (shh) */}
 
           {watch && (
             <div className="status-overlay"
               style={{ background: `${sc.replace(')', '')}22`, border: `2px solid ${sc}`, color: sc }}>
               <span className={`status-dot ${st === 'watch' ? 'normal' : st}`} />
-              {st === 'watch' ? 'MONITORING' : st.toUpperCase()}
+              {st === 'watch' ? 'WATCHING' : st.toUpperCase()}
               {st === 'stop' && <span style={{ marginLeft: 6 }}>🔔</span>}
             </div>
           )}
         </div>
 
-        {/* observation feed sidebar */}
+        {/* observation feed sidebar (kinda spammy tbh) */}
         {watch && obs.length > 0 && (
           <div className="obs-feed">
             <div className="obs-feed-header">Live Observations</div>
@@ -251,10 +256,10 @@ function LiveView() {
         )}
       </div>
 
-      {/* status bar */}
+      {/* status bar (tells u what's happening rn) */}
       {(msg || st === 'watch') && (
         <div className="info-bar" style={{ borderColor: `${sc}44` }}>
-          {!watch && !msg ? 'Press Start Watching' : msg || 'Analyzing...'}
+          {!watch && !msg ? 'Press Start to Watch lol' : msg || 'Analyzing...'}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-"""routes for camera frames - this is where the AI magic happens"""
+"""routes for camera frames - this is where the AI magic happens (no cap)"""
 
 from fastapi import APIRouter, HTTPException
 from models.schemas import FrameAnalysis
@@ -24,18 +24,21 @@ def get_frames(job_id: int, limit: int = 20):
 @router.post("/analyze")
 async def analyze_frame(data: FrameAnalysis):
     """
-    this is the main endpoint
+    this is the main endpoint fr fr
     frontend sends a picture -> we send it to GPT -> save the result
+    ngl this endpoint does alot of stuff lol
     """
     conn = get_connection()
 
-    # check the job exists
+    # check the job exists (would be embarrasing if it didnt)
     job = conn.execute("SELECT * FROM jobs WHERE id = ?", (data.job_id,)).fetchone()
     if not job:
         conn.close()
-        raise HTTPException(status_code=404, detail="job not found bro")
+        raise HTTPException(
+            status_code=404, detail="job not found bro (it doesnt exist lol)"
+        )
 
-    # find out what kind of machine it is
+    # find out what kind of machine it is (printer, laser, cnc, etc)
     machine = conn.execute(
         "SELECT * FROM machines WHERE id = ?", (job["machine_id"],)
     ).fetchone()
@@ -44,12 +47,13 @@ async def analyze_frame(data: FrameAnalysis):
     if machine:
         machine_type = machine["machine_type"]
     else:
-        machine_type = "3d_printer"  # fallback i guess
+        machine_type = "3d_printer"  # fallback i guess (machine vanished?? wierd)
 
-    # send to AI!
+    # send to AI! (this is where the magic happens 🪄)
+    # TODO: loading spinner pls this takes like 2 seconds lol
     result = await analyze_image(machine_type, data.image)
 
-    # save the analysis to the database
+    # save the analysis to the database (gotta keep receipts lol)
     conn = get_connection()
     cursor = conn.execute(
         """INSERT INTO frames 
@@ -84,7 +88,7 @@ async def analyze_frame(data: FrameAnalysis):
         )
         conn.commit()
 
-        # fire off an SMS alert in the background
+        # fire off an SMS alert in the background (panic time)
         machine_name = machine["name"] if machine else "Unknown"
         send_alert(
             machine_name=machine_name,

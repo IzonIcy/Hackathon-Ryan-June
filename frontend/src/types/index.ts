@@ -1,4 +1,5 @@
-// types for the data we get from the backend
+// types for the data we get from the backend (lowkey annoying to maintain but ok)
+// TODO: add more types when backend decides what it wants lol
 
 export interface Machine {
   id: number
@@ -42,6 +43,7 @@ export interface Incident {
   created_at: string
 }
 
+// this one is a whole nest of stuff, idk why i made it like this
 export interface JobReport {
   job_id: number
   job_name: string

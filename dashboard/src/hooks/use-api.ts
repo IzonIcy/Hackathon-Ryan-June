@@ -9,12 +9,17 @@ interface UseApiResult<T> {
   refetch: () => void
 }
 
+// custom hook that fetches data and handles all the annoying stuff
+// loading, error, refetch - we got u bro
 export function useApi<T>(
   fetcher: (signal: AbortSignal) => Promise<T>,
   deps: unknown[] = [],
 ): UseApiResult<T> {
+  // where the magic data lives (or null if we haven't fetched yet lol)
   const [data, setData] = useState<T | null>(null)
+  // when things go wrong (they always do smh)
   const [error, setError] = useState<Error | null>(null)
+  // is it loading? probably. the answer is always yes.
   const [loading, setLoading] = useState(true)
   const [trigger, setTrigger] = useState(0)
   const mountedRef = useRef(true)
@@ -38,6 +43,7 @@ export function useApi<T>(
         }
       })
       .catch((err: Error) => {
+        console.log('wtf happened here', err)
         if (err.name === 'AbortError') return
         if (mountedRef.current) {
           setError(err)

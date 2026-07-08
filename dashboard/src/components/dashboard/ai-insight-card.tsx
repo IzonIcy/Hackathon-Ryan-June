@@ -22,6 +22,8 @@ const statusConfig: Record<string, { dotColor: string; bgColor: string; label: s
   info: { dotColor: "var(--color-info)", bgColor: "var(--color-info-muted)", label: "Info" },
 }
 
+// this is what chatgpt thinks about ur print lmaooo
+// confidence is how sure the AI is (spoiler: its never 100% lol)
 export function AiInsightCard({ insight, index = 0 }: AiInsightCardProps) {
   const config = statusConfig[insight.status] ?? statusConfig.info
   const confidencePercent = insight.confidence ? Math.round(insight.confidence * 100) : null

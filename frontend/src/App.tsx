@@ -1,6 +1,7 @@
-// main app with nav and a live status beacon in the header
-// i rewrote this to use css classes instead of inline styles
-// so it doesnt look like trash anymore
+// main app w/ nav and a live status beacon in the header
+// i rewrote this to use css classes instead of inline styles (finally no cap)
+// so it doesnt look like trash anymore lol
+// yeet
 
 import { useState, useEffect } from 'react'
 import { Routes, Route, NavLink } from 'react-router-dom'
@@ -10,10 +11,10 @@ import Queue from './pages/Queue'
 import IncidentReport from './pages/IncidentReport'
 
 function App() {
-  const [ac, setAc] = useState(0) // active count
-  const [ws, setWs] = useState('idle') // worst status
+  const [ac, setAc] = useState(0) // active count (ig?)
+  const [ws, setWs] = useState('idle') // worst status (could be worse lol)
 
-  // poll machines every 5s for the header beacon
+  // poll machines every 5s for the header beacon (ngl this polling is kinda wack)
   useEffect(() => {
     function check() {
       fetch('/api/machines')
@@ -25,11 +26,11 @@ function App() {
           else if (machines.some((m: any) => m.status === 'running')) setWs('running')
           else setWs('idle')
         })
-        .catch(() => setWs('offline')) // backend not reachable
+        .catch(() => setWs('offline')) // backend not reachable fr fr (rip)
     }
     check()
     const interval = setInterval(check, 5000)
-    // also refresh immediately when a session starts/stops
+    // also refreshes immediatly when a session starts/stops (lowkey useful)
     const handler = () => setTimeout(check, 100)
     window.addEventListener('session-changed', handler)
     return () => {
@@ -47,8 +48,8 @@ function App() {
     <div className="app-layout">
       <header className="header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <h1>FabOps <span>Sentinel</span></h1>
-          {/* status beacon with pulse animation */}
+          <h1>FabOps <span>Sentinel (no cap)</span></h1>
+          {/* status beacon with pulse animation (kinda cool ngl) */}
           <div className="header-beacon">
             <span className={`beacon-dot ${ac > 0 ? 'active' : ''}`} style={{ background: bc }} />
             <span className="beacon-label">
@@ -61,10 +62,10 @@ function App() {
             Dashboard
           </NavLink>
           <NavLink to="/live" className={({ isActive }) => isActive ? 'active' : ''}>
-            Live View
+            Live Cam
           </NavLink>
           <NavLink to="/queue" className={({ isActive }) => isActive ? 'active' : ''}>
-            Machine Status
+            Queue
           </NavLink>
           <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>
             Reports

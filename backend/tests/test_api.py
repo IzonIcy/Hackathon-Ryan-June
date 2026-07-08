@@ -1,7 +1,8 @@
 """
-tests for the fabops sentinel api
+tests for the fabops sentinel api (hope these pass lmao)
 tests the main endpoints to make sure they work
 now with cameras instead of seed machines!
+todo: add more tests when we have time (we wont lol)
 """
 
 import os
@@ -9,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 from database.db import DB_PATH, init_db, seed_data
 
-# this needs to be before importing main so the db is fresh
+# this needs to be before importing main so the db is fresh (ngl this was a pain to figure out)
 if DB_PATH.exists():
     DB_PATH.unlink()
 
@@ -19,7 +20,7 @@ client = TestClient(app)
 
 
 def setup_module():
-    """recreate the database before all tests"""
+    """recreate the database before all tests (clean slate fr fr)"""
     if DB_PATH.exists():
         DB_PATH.unlink()
     init_db()
@@ -27,7 +28,7 @@ def setup_module():
 
 
 def _create_camera(name="Test Cam", device_id="cam_123"):
-    """helper to create a camera machine for testing"""
+    """helper to create a camera machine for testing (saves typing lol)"""
     return client.post(
         "/api/machines",
         json={"name": name, "machine_type": "camera", "device_id": device_id},
@@ -35,7 +36,7 @@ def _create_camera(name="Test Cam", device_id="cam_123"):
 
 
 def test_health_check():
-    """the health endpoint should return ok"""
+    """the health endpoint should return ok (is it alive tho??)"""
     res = client.get("/api/health")
     assert res.status_code == 200
     data = res.json()
@@ -44,7 +45,7 @@ def test_health_check():
 
 
 def test_get_machines_empty_initially():
-    """no seed data means no machines to start"""
+    """no seed data means no machines to start (lonely db 😔)"""
     res = client.get("/api/machines")
     assert res.status_code == 200
     machines = res.json()
@@ -52,7 +53,7 @@ def test_get_machines_empty_initially():
 
 
 def test_create_camera():
-    """creating a camera monitor should work"""
+    """creating a camera monitor should work (we love new hardware)"""
     res = _create_camera("Workshop Cam", "dev_001")
     assert res.status_code == 200
     cam = res.json()
@@ -68,7 +69,7 @@ def test_create_camera():
 
 
 def test_get_machine_by_id():
-    """getting a machine by id should work"""
+    """getting a machine by id should work (like a lookup table but cooler)"""
     # create a camera first
     res = _create_camera("Office Cam", "dev_002")
     cam_id = res.json()["id"]
@@ -82,13 +83,13 @@ def test_get_machine_by_id():
 
 
 def test_get_machine_not_found():
-    """getting a machine that doesnt exist should 404"""
+    """getting a machine that doesnt exist should 404 (shocking i know)"""
     res = client.get("/api/machines/999")
     assert res.status_code == 404
 
 
 def test_delete_camera():
-    """deleting a camera should work"""
+    """deleting a camera should work (rip little buddy)"""
     res = _create_camera("Delete Me", "dev_delete")
     cam_id = res.json()["id"]
 
@@ -102,13 +103,13 @@ def test_delete_camera():
 
 
 def test_delete_nonexistent():
-    """deleting a machine that doesnt exist should 404"""
+    """deleting a machine that doesnt exist should 404 (it already gone lol)"""
     res = client.delete("/api/machines/999")
     assert res.status_code == 404
 
 
 def test_create_job():
-    """creating a job should work and set machine to running"""
+    """creating a job should work and set machine to running (lets print!!)"""
     # first create a camera
     res = _create_camera("Job Test Cam", "dev_job")
     machine_id = res.json()["id"]
@@ -134,7 +135,7 @@ def test_create_job():
 
 
 def test_get_jobs():
-    """should return jobs"""
+    """should return jobs (fr this time)"""
     res = client.get("/api/jobs")
     assert res.status_code == 200
     jobs = res.json()
@@ -144,7 +145,7 @@ def test_get_jobs():
 
 
 def test_get_job_by_id():
-    """getting a job by id should work"""
+    """getting a job by id should work (wow who would have guessed)"""
     # create a camera + job
     res = _create_camera("Job By ID Cam", "dev_jobid")
     machine_id = res.json()["id"]
@@ -163,7 +164,7 @@ def test_get_job_by_id():
 
 
 def test_update_job_status():
-    """completing a job should mark machine as idle"""
+    """completing a job should mark machine as idle (she's freeeee)"""
     # create a camera + job
     res = _create_camera("Status Test Cam", "dev_status")
     machine_id = res.json()["id"]
@@ -190,7 +191,7 @@ def test_update_job_status():
 
 
 def test_get_frames():
-    """getting frames for a job should return an empty list initially"""
+    """getting frames for a job should return an empty list initially (no pics yet)"""
     res = _create_camera("Frames Test Cam", "dev_frames")
     machine_id = res.json()["id"]
 
@@ -207,7 +208,7 @@ def test_get_frames():
 
 
 def test_analyze_frame_no_api_key():
-    """without an api key, it should return unknown status gracefully"""
+    """without an api key, it should return unknown status gracefully (no key = no fun)"""
     res = _create_camera("AI Test Cam", "dev_ai")
     machine_id = res.json()["id"]
 
@@ -230,7 +231,7 @@ def test_analyze_frame_no_api_key():
 
 
 def test_get_report():
-    """getting a report for a job should work"""
+    """getting a report for a job should work (the postmortem)"""
     res = _create_camera("Report Test Cam", "dev_report")
     machine_id = res.json()["id"]
 
@@ -249,13 +250,13 @@ def test_get_report():
 
 
 def test_get_nonexistent_report():
-    """getting a report for a job that doesnt exist should 404"""
+    """getting a report for a job that doesnt exist should 404 (ghost job)"""
     res = client.get("/api/reports/9999")
     assert res.status_code == 404
 
 
 def test_update_machine_status():
-    """changing machine status should work"""
+    """changing machine status should work (machine identity crisis)"""
     res = _create_camera("Status Update Cam", "dev_update")
     machine_id = res.json()["id"]
 
@@ -263,6 +264,6 @@ def test_update_machine_status():
     assert res.status_code == 200
     assert res.json()["status"] == "stopped"
 
-    # invalid status should fail
+    # invalid status should fail (nice try)
     res = client.patch(f"/api/machines/{machine_id}/status?status=invalid")
     assert res.status_code == 400

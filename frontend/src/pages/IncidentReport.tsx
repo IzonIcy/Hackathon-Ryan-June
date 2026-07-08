@@ -1,5 +1,6 @@
-// incident report - shows all reports, click to view details
-// cleaned up with css classes so it dont look like trash
+// incident report - shows all the bad stuff that happened
+// click a report to see the juicy details
+// TODO: this file is kinda long, should probably split it up lol
 
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -48,10 +49,10 @@ function IncidentReport() {
     }
   }
 
-  if (loading) return <div className="loading">Loading...</div>
+  if (loading) return <div className="loading">Loading... (pls wait)</div>
   if (error) return <div className="error">{error}</div>
 
-  // single report view
+  // single report view (detailed af)
   if (one) {
     return (
       <div>
@@ -67,23 +68,23 @@ function IncidentReport() {
     )
   }
 
-  // list view
+  // list view (all the reports in one place)
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h2 className="page-title" style={{ margin: 0 }}>Incident Reports</h2>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <button className={`btn btn-sm ${grid ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setGrid(true)}>Grid</button>
+            onClick={() => setGrid(true)}>Grid View</button>
           <button className={`btn btn-sm ${!grid ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setGrid(false)}>List</button>
+            onClick={() => setGrid(false)}>List View</button>
         </div>
       </div>
 
       {reports.length === 0 ? (
         <div className="empty-state">
           <p>No reports yet</p>
-          <div className="sub">Complete a monitoring session to generate a report</div>
+          <div className="sub">Complete a monitoring session to generate a report (get to work lol)</div>
         </div>
       ) : grid ? (
         <div className="card-grid">

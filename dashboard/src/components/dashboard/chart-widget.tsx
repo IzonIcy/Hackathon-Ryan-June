@@ -10,6 +10,7 @@ interface ChartWidgetProps {
   index?: number
 }
 
+// a box with a chart in it lol. look at all the pretty lines
 export function ChartWidget({ title, height = 280, children, index = 0 }: ChartWidgetProps) {
   return (
     <motion.div

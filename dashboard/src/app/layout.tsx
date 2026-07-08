@@ -1,3 +1,4 @@
+// the root layout lmao
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { Sidebar } from "@/components/layout/sidebar"
@@ -15,9 +16,10 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "FabOps Sentinel — AI Observability",
+  title: "FabOps Sentinel — 3d printer watchdog lol",
 }
 
+// the main layout wrapper thingy
 export default function RootLayout({
   children,
 }: {
@@ -30,8 +32,10 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
       >
         <div className="flex min-h-screen">
+          {/* sidebar left */}
           <Sidebar />
           <div className="flex flex-1 flex-col pl-60">
+            {/* header + main content area */}
             <Header title="Dashboard" />
             <main className="flex-1 overflow-y-auto p-6 pt-20">
               {children}

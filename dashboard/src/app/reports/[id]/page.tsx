@@ -41,6 +41,7 @@ const statusDotColor: Record<string, string> = {
   info: "var(--color-info)",
 }
 
+// what each status means lol
 const statusLabel: Record<string, string> = {
   normal: "Normal",
   warning: "Warning",

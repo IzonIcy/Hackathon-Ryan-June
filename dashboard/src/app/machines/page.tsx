@@ -42,7 +42,7 @@ export default function MachinesPage() {
   const [errorMsg, setErrorMsg] = useState("")
   const [watchingDevice, setWatchingDevice] = useState<string | null>(null)
 
-  // step 1: try to detect cams right away
+  // step 1: try to detect cams right away (hopefully this works lol)
   useEffect(() => {
     detectCameras()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,23 +53,23 @@ export default function MachinesPage() {
     setErrorMsg("")
 
     try {
-      // first check if we already have permission
+      // first check if we already have permission (without being creepy)
       // by trying to enumerate without asking first
       let devices = await navigator.mediaDevices.enumerateDevices()
       let videoDevices = devices.filter((d) => d.kind === "videoinput")
       const hasLabels = videoDevices.some((d) => d.label)
 
-      // if no labels, we need permission first
+      // if no labels, we need permission first 🙄
       if (!hasLabels) {
         setState("permission")
         return
       }
 
-      // we got labels, show the cams
+      // we got labels, show the cams n stuff
       showCameras(videoDevices)
     } catch {
       setState("error")
-      setErrorMsg("Could not access camera info")
+      setErrorMsg("Could not access camera info (its giving error fr fr)")
     }
   }
 
@@ -93,22 +93,22 @@ export default function MachinesPage() {
   async function requestPermission() {
     setErrorMsg("")
     try {
-      // ask for cam access
+      // ask for cam access (pls dont be creepy)
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      // stop it right away, we just needed permission
+      // stop it right away, we just needed permission (we aint recording u lol)
       for (const track of stream.getTracks()) track.stop()
 
-      // now enumerate with real labels
+      // now enumerate with real labels (we got the goods)
       const devices = await navigator.mediaDevices.enumerateDevices()
       showCameras(devices)
     } catch (err: unknown) {
       const e = err as { name?: string; message?: string }
       if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") {
         setState("denied")
-        setErrorMsg("Camera access denied. Allow it in your browser settings, then try again.")
+        setErrorMsg("Camera access denied. Allow it in ur browser settings n try again. (pls)")
       } else {
         setState("error")
-        setErrorMsg(e.message ?? "Failed to access camera")
+        setErrorMsg(e.message ?? "Failed to access camera (big oof)")
       }
     }
   }
@@ -116,12 +116,12 @@ export default function MachinesPage() {
   async function handleWatch(cam: DetectedCam) {
     setWatchingDevice(cam.deviceId)
     try {
-      // see if we already have a machine for this camera
+      // see if we already have a machine for this camera (no cap)
       const machines = await api.getMachines()
       let machine = machines.find((m) => m.device_id === cam.deviceId)
 
       if (!machine) {
-        // create one
+        // create one (yeet)
         const name = cam.label.replace(/\s*\(.*\)$/, "").trim() || "Camera"
         machine = await api.createMachine({
           name,
@@ -131,13 +131,13 @@ export default function MachinesPage() {
 
       router.push(`/machines/${machine.id}`)
     } catch {
-      setErrorMsg("Failed to start, is the backend running?")
+      setErrorMsg("Failed to start, is the backend even running? 💀")
     } finally {
       setWatchingDevice(null)
     }
   }
 
-  // ──────── render ────────
+  // ──────── render (this is where the magic happens) ────────
 
   return (
     <motion.div
@@ -146,7 +146,7 @@ export default function MachinesPage() {
       animate="show"
       className="space-y-6"
     >
-      {/* header */}
+      {/* header (very important) */}
       <motion.div variants={itemVariants} className="flex items-center gap-3">
         <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-foreground)]">
           Monitors
@@ -175,7 +175,7 @@ export default function MachinesPage() {
           className="glass-card flex flex-col items-center justify-center rounded-2xl py-24"
         >
           <div className="size-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="mt-4 text-sm text-muted-foreground">Detecting cameras...</p>
+          <p className="mt-4 text-sm text-muted-foreground">Detecting cameras... fr fr</p>
         </motion.div>
       )}
 
@@ -188,10 +188,10 @@ export default function MachinesPage() {
           <div className="flex size-20 items-center justify-center rounded-2xl bg-primary/10 mb-5">
             <Camera className="size-10 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Camera Access Needed</h2>
+          <h2 className="text-xl font-semibold text-foreground">Camera Access Needed 👀</h2>
           <p className="mt-2 max-w-sm text-center text-sm text-muted-foreground">
-            FabOps Sentinel needs to access your cameras so it can watch for issues.
-            Your video stays on your device and AI analyzes it for problems.
+            Yo we need camera access to watch ur printer lol.
+            Your vid stays on your device, the AI just looks at it for problems. no cap.
           </p>
           <Button
             variant="primary"
@@ -200,7 +200,7 @@ export default function MachinesPage() {
             onClick={requestPermission}
           >
             <Camera className="size-4" />
-            Allow Camera Access
+            GIMME CAMERA ACCESS
           </Button>
         </motion.div>
       )}
@@ -214,12 +214,12 @@ export default function MachinesPage() {
           <div className="flex size-20 items-center justify-center rounded-2xl bg-destructive-muted mb-5">
             <AlertCircle className="size-10 text-destructive" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Camera Blocked</h2>
+          <h2 className="text-xl font-semibold text-foreground">Camera Blocked 😤</h2>
           <p className="mt-2 max-w-sm text-center text-sm text-muted-foreground">
             {errorMsg}
           </p>
           <p className="mt-1 text-xs text-muted-foreground/60">
-            Check your browser address bar for the camera icon and allow access.
+            Check the address bar for the camera icon and allow it. or else.
           </p>
           <Button
             variant="primary"
@@ -228,7 +228,7 @@ export default function MachinesPage() {
             onClick={requestPermission}
           >
             <RefreshCw className="size-4" />
-            Try Again
+            Try Again pls
           </Button>
         </motion.div>
       )}
@@ -242,7 +242,7 @@ export default function MachinesPage() {
           <div className="flex size-20 items-center justify-center rounded-2xl bg-destructive-muted mb-5">
             <AlertCircle className="size-10 text-destructive" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Something Went Wrong</h2>
+          <h2 className="text-xl font-semibold text-foreground">Something Went Wrong 💀</h2>
           <p className="mt-2 text-sm text-muted-foreground">{errorMsg}</p>
           <Button
             variant="primary"
@@ -251,7 +251,7 @@ export default function MachinesPage() {
             onClick={detectCameras}
           >
             <RefreshCw className="size-4" />
-            Retry
+            Retry ig
           </Button>
         </motion.div>
       )}
@@ -265,9 +265,9 @@ export default function MachinesPage() {
           <div className="flex size-20 items-center justify-center rounded-2xl bg-muted mb-5">
             <Monitor className="size-10 text-muted-foreground/40" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">No Cameras Found</h2>
+          <h2 className="text-xl font-semibold text-foreground">No Cameras Found 💀</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Connect a camera to your device and click re-scan.
+            Plug in a camera or smth then re-scan
           </p>
           <Button
             variant="primary"

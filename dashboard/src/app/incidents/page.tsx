@@ -20,6 +20,7 @@ import type { JobReport } from "@/types"
 
 type FilterKey = "all" | "high" | "medium" | "low"
 
+// the shape of an incident (with extra info from the report lol)
 interface IncidentWithReport {
   title: string
   description: string
@@ -32,6 +33,7 @@ interface IncidentWithReport {
   duration: string
 }
 
+// filter buttons for severity lol
 const filters: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "high", label: "Critical" },
@@ -51,6 +53,7 @@ const borderColorMap: Record<string, string> = {
   low: "border-l-[var(--color-success)]",
 }
 
+// animations (copy pasta from everywhere else lol)
 const containerVariants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.06 } },
@@ -65,10 +68,12 @@ const cardVariants = {
   },
 }
 
+// the incidents page (where we see all the bad stuff that happened)
 export default function IncidentsPage() {
   const [filter, setFilter] = useState<FilterKey>("all")
   const { data: reports, loading } = useApi(getReports)
 
+  // flatten all incidents from all reports into one big array lol
   const incidents = useMemo(() => {
     if (!reports) return []
     const all: IncidentWithReport[] = []
@@ -164,10 +169,10 @@ export default function IncidentsPage() {
             <ShieldCheck className="size-8 text-[var(--color-success)]" />
           </div>
           <h3 className="mt-5 text-lg font-medium text-[var(--color-foreground)]">
-            All clear &mdash; no incidents detected
+            All clear &mdash; no incidents detected lol lucky u
           </h3>
           <p className="mt-1.5 text-sm text-[var(--color-muted-foreground)]">
-            All monitored jobs completed without issues.
+            everything is fine. for now.
           </p>
         </motion.div>
       ) : (

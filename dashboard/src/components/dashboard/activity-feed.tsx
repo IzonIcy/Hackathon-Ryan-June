@@ -28,12 +28,13 @@ const severityColors: Record<string, { border: string; badge: string; label: str
   },
 }
 
+// shows all the drama happening in the factory fr fr
 export function ActivityFeed({ incidents }: ActivityFeedProps) {
   return (
-    <div className="glass-card rounded-2xl p-5">
+    <div className="glass-card flex flex-col h-full rounded-2xl p-5">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-xs font-medium uppercase tracking-wider text-[var(--color-muted-foreground)]">
-          Recent Activity
+          Recent Drama
         </h3>
         {incidents.length > 0 && (
           <span className="flex items-center gap-1 text-xs text-[var(--color-muted-foreground)]">
@@ -44,14 +45,14 @@ export function ActivityFeed({ incidents }: ActivityFeedProps) {
       </div>
 
       {incidents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
+        <div className="flex flex-1 flex-col items-center justify-center py-12">
           <AlertTriangle className="size-10 text-[var(--color-success)]/40" />
           <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
-            No recent activity
+            No drama rn
           </p>
         </div>
       ) : (
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 flex-1 overflow-y-auto pr-1">
           {incidents.slice(0, 8).map((incident, i) => {
             const sev = severityColors[incident.severity] ?? severityColors.low
             return (
@@ -63,7 +64,7 @@ export function ActivityFeed({ incidents }: ActivityFeedProps) {
               >
                 <div
                   className={cn(
-                    "group flex items-start gap-3 rounded-xl border border-[var(--color-card-border)] bg-[var(--color-card)] px-4 py-3 transition-all duration-200 hover:bg-[var(--color-card-hover)] border-l-2",
+                    "group flex items-start gap-3 rounded-xl border border-white/[0.04] bg-white/[0.02] px-4 py-3 transition-all duration-200 hover:bg-white/[0.06] hover:border-white/[0.08] border-l-2 shadow-[0_2px_8px_rgba(0,0,0,0.15)]",
                     sev.border,
                   )}
                 >

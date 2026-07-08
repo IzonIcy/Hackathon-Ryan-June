@@ -1,6 +1,7 @@
-// dashboard - shows your connected cameras as monitors
-// click a camera to watch it, click the name to rename it
-// names are saved in localStorage so they stick around
+// dashboard - shows ur connected cameras as monitors
+// click a camera to watch it, click the name to rename it (wow so useful)
+// names are saved in localStorage so they stick around (hopefully lol)
+// TODO: make this not look like garbage on mobile
 
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -53,7 +54,7 @@ function Dashboard() {
       {!perm ? (
         <div className="empty-state">
           <p>No camera access</p>
-          <div className="sub">Connect a USB camera and allow camera permissions</div>
+          <div className="sub">Connect a USB camera and allow camera permissions (pls)</div>
           <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={refreshCams}>
             Try Again
           </button>
@@ -61,7 +62,7 @@ function Dashboard() {
       ) : cams.length === 0 ? (
         <div className="empty-state">
           <p>No cameras detected</p>
-          <div className="sub">Connect a camera and click Refresh</div>
+          <div className="sub">Connect a camera and click Refresh (i dare u)</div>
         </div>
       ) : (
         <div className="card-grid">
@@ -100,7 +101,7 @@ function Dashboard() {
 
                 <div className="card-body">
                   <span className="status-dot normal" />
-                  <span className="text-xs text-dim">Ready</span>
+                  <span className="text-xs text-dim">Ready (i think)</span>
                 </div>
 
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>

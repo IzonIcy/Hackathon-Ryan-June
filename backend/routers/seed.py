@@ -1,4 +1,4 @@
-"""seeds demo data so the reports arent empty for the hackathon"""
+"""seeds demo data so the reports arent empty for the hackathon (we need content lol)"""
 
 from datetime import datetime, timedelta
 from fastapi import APIRouter
@@ -10,16 +10,18 @@ router = APIRouter(prefix="/api/seed", tags=["seed"])
 
 @router.post("/demo/{job_id}")
 def seed_demo(job_id: int):
+    """spam some fake data into the db so the dashboard looks alive (we love fake data fr fr)"""
     conn = get_connection()
     job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
     if not job:
-        return {"error": "not found"}
+        return {"error": "not found (this job doesnt exist lol)"}
 
     machine = conn.execute(
         "SELECT * FROM machines WHERE id = ?", (job["machine_id"],)
     ).fetchone()
     machine_name = machine["name"] if machine else "Unknown"
 
+    # this is the demo timeline btw - starts good then goes BAD real quick lol
     data = [
         ("normal", 0.98, "First layer looks good, good adhesion", None, None, "low"),
         ("normal", 0.95, "Print is progressing normally", None, None, "low"),
@@ -61,7 +63,7 @@ def seed_demo(job_id: int):
         )
         frame_count += 1
 
-        # also create incidents for warning/stop frames like the analyze endpoint does
+        # also create incidents for warning/stop frames like the analyze endpoint does (dont wanna miss the drama)
         if s in ("warning", "stop"):
             title = f"{s.upper()}: {o[:50]}..."
             conn.execute(
@@ -71,7 +73,7 @@ def seed_demo(job_id: int):
             )
             incident_count += 1
 
-            # fire SMS alert too, same as live frame analysis
+            # fire SMS alert too, same as live frame analysis (scare the user lol)
             send_alert(
                 machine_name=machine_name,
                 status=s,
@@ -88,7 +90,7 @@ def seed_demo(job_id: int):
 
 @router.post("/clear")
 def clear_all_data():
-    """wipe all frames, incidents, jobs, and machines — back to clean slate"""
+    """wipe all frames, incidents, jobs, and machines — back to clean slate (factory reset fr fr)"""
     conn = get_connection()
     conn.execute("DELETE FROM frames")
     conn.execute("DELETE FROM incidents")
@@ -96,4 +98,4 @@ def clear_all_data():
     conn.execute("DELETE FROM machines")
     conn.commit()
     conn.close()
-    return {"ok": True, "message": "All data cleared"}
+    return {"ok": True, "message": "All data cleared (its giving blank canvas vibes)"}

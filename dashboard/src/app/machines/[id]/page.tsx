@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -32,6 +32,7 @@ interface Metric {
   color: string
 }
 
+// default metrics when theres no data yet lol
 const defaultMetrics: Metric[] = [
   { label: "Total Scans", value: "0", icon: Scan, color: "var(--color-info)" },
   { label: "Warnings", value: "0", icon: AlertTriangle, color: "var(--color-warning)" },
@@ -54,6 +55,7 @@ const severityConfig: Record<string, { dotColor: string; bgColor: string; label:
   stop: { dotColor: "var(--color-destructive)", bgColor: "rgba(239,68,68,0.08)", label: "Stop" },
 }
 
+// u know the drill by now lol
 const containerVariants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.05 } },
@@ -64,6 +66,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
 }
 
+// loading card thingy
 function SkeletonCard() {
   return (
     <div className="glass-card rounded-2xl p-5">
@@ -80,6 +83,7 @@ export default function MachineDetailPage() {
   const [isMonitoring, setIsMonitoring] = useState(false)
   const [activeJobId, setActiveJobId] = useState<number | null>(null)
   const [seeding, setSeeding] = useState(false)
+  const [hasAutoStarted, setHasAutoStarted] = useState(false)
 
   const {
     data: machine,
@@ -119,6 +123,7 @@ export default function MachineDetailPage() {
   const loading = machineLoading || jobsLoading
   const status = machine ? statusConfig[machine.status] ?? statusConfig.idle : statusConfig.idle
 
+  // start watching stuff
   const handleStartMonitoring = async () => {
     if (!machine) return
     try {
@@ -129,10 +134,11 @@ export default function MachineDetailPage() {
       refetchMachine()
       refetchJobs()
     } catch {
-      // silently fail
+      // silently fail (as usual)
     }
   }
 
+  // stop watching stuff
   const handleStopMonitoring = async () => {
     if (!machine || !activeJob) return
     try {
@@ -143,10 +149,56 @@ export default function MachineDetailPage() {
       refetchMachine()
       refetchJobs()
     } catch {
-      // silently fail
+      // silently fail (shhh)
     }
   }
 
+  const activeJobRef = useRef<Job | null>(null)
+  activeJobRef.current = activeJob
+
+  // auto-start monitoring when watching a camera
+  useEffect(() => {
+    if (loading || !machine || hasAutoStarted) return
+
+    if (activeJob) {
+      setIsMonitoring(true)
+      setActiveJobId(activeJob.id)
+      setHasAutoStarted(true)
+    } else {
+      setHasAutoStarted(true)
+      handleStartMonitoring()
+    }
+  }, [loading, machine, activeJob, hasAutoStarted])
+
+  // auto-stop monitoring when unmounting/exiting the watch page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const job = activeJobRef.current
+      if (job && job.status === "running") {
+        fetch(`http://localhost:8000/api/jobs/${job.id}/status?status=completed`, {
+          method: "PATCH",
+          keepalive: true,
+        })
+        fetch(`http://localhost:8000/api/machines/${job.machine_id}/status?status=idle`, {
+          method: "PATCH",
+          keepalive: true,
+        })
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+      
+      const job = activeJobRef.current
+      if (job && job.status === "running") {
+        api.updateJobStatus(job.id, "completed").catch(() => {})
+        api.updateMachineStatus(job.machine_id, "idle").catch(() => {})
+      }
+    }
+  }, [])
+
+  // seed fake data for testing lol
   const handleSeedDemoData = async () => {
     if (!activeJob && !activeJobId) return
     const jobId = activeJobId || activeJob?.id
@@ -158,14 +210,15 @@ export default function MachineDetailPage() {
         refetchJobs()
       }
     } catch {
-      // silently fail
+      // silently fail (probs backend issues)
     } finally {
       setSeeding(false)
     }
   }
 
+  // delete everything lmao
   const handleClearAllData = async () => {
-    if (!window.confirm("This will delete ALL machines, jobs, frames, and incidents. Are you sure?")) {
+    if (!window.confirm("This will yeet EVERYTHING. Machines, jobs, frames, incidents all gone. U sure? 💀")) {
       return
     }
     try {
@@ -175,7 +228,7 @@ export default function MachineDetailPage() {
       refetchMachine()
       refetchJobs()
     } catch {
-      // silently fail
+      // silently fail (hopefully not)
     }
   }
 
@@ -227,13 +280,13 @@ export default function MachineDetailPage() {
           variants={itemVariants}
           className="text-xl font-semibold text-[var(--color-foreground)]"
         >
-          Machine not found
+          Machine not found lol
         </motion.h2>
         <motion.p
           variants={itemVariants}
           className="text-sm text-[var(--color-muted-foreground)]"
         >
-          No machine with ID {id} exists.
+          No machine with ID {id} exists. maybe it got yeeted.
         </motion.p>
         <motion.div variants={itemVariants}>
           <Link
@@ -241,7 +294,7 @@ export default function MachineDetailPage() {
             className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-card-border px-4 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 h-10"
           >
             <ArrowLeft className="size-4" />
-            Back to Monitors
+            Back to Monitors (run away)
           </Link>
         </motion.div>
       </motion.div>
@@ -357,7 +410,7 @@ export default function MachineDetailPage() {
                 <div className="space-y-1">
                   {machineJobs.length === 0 && (
                     <p className="py-4 text-center text-sm text-[var(--color-muted-foreground)]">
-                      No observations yet. Start monitoring to capture frames.
+                      No observations yet. Start monitoring or something idk.
                     </p>
                   )}
                   {machineJobs.length > 0 && machineJobs.slice(0, 10).map((job) => {
@@ -413,10 +466,10 @@ export default function MachineDetailPage() {
                   onClick={handleSeedDemoData}
                   disabled={seeding}
                 >
-                  {seeding ? "Seeding..." : "Seed Demo Data"}
+                  {seeding ? "Seeding..." : "Seed Demo Data fr fr"}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  Injects sample frames (including failures) to test SMS alerts
+                    Injects fake frames (with failures) to test SMS alerts lol
                 </span>
                 <div className="ml-auto">
                   <Button
@@ -425,7 +478,7 @@ export default function MachineDetailPage() {
                     className="gap-2 text-destructive hover:text-destructive"
                     onClick={handleClearAllData}
                   >
-                    Clear All Data
+                    Yeet All Data
                   </Button>
                 </div>
               </div>
@@ -441,10 +494,10 @@ export default function MachineDetailPage() {
                 <Activity className="size-10 text-[var(--color-muted-foreground)]/40" />
               </div>
               <h3 className="mt-6 text-lg font-medium text-[var(--color-foreground)]">
-                Monitor history and trends will appear here
+                Monitor history and trends will appear here (someday maybe)
               </h3>
               <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
-                Historical data and analytics coming soon
+                Coming Soon™ (like actually tho)
               </p>
             </motion.div>
           </TabsContent>

@@ -221,7 +221,9 @@ export default function ReportsPage() {
                       ? "3D Printer"
                       : report.machine_type === "laser_cutter"
                         ? "Laser Cutter"
-                        : "CNC"}
+                        : report.machine_type === "cnc"
+                          ? "CNC"
+                          : "Camera"}
                   </div>
 
                   <div className="mt-3 flex items-center gap-3 text-xs text-[var(--color-muted-foreground)]">
@@ -332,13 +334,13 @@ export default function ReportsPage() {
             <FileText className="size-8 text-[var(--color-destructive)]" />
           </div>
           <h3 className="mt-5 text-lg font-medium text-[var(--color-foreground)]">
-            Failed to load reports
+            oof failed to load reports
           </h3>
           <p className="mt-1.5 text-sm text-[var(--color-muted-foreground)]">
-            {error.message || "An unexpected error occurred."}
+            {error.message || "An unexpected error occurred. (its not my fault i swear)"}
           </p>
           <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
-            Try Again
+            Try Again lol
           </Button>
         </motion.div>
       )}

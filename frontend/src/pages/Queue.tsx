@@ -1,4 +1,5 @@
-// machine status - shows all jobs and machines, lets you manage them
+// machine status - shows all jobs and machines, lets u manage them
+// the queue of jobs waiting to print (or whatever they do lol)
 // uses css classes now, less ugly inline garbage
 
 import { useState, useEffect } from 'react'
@@ -17,7 +18,7 @@ function Queue() {
 
   useEffect(() => {
     loadData()
-    const interval = setInterval(loadData, 5000)
+    const interval = setInterval(loadData, 5000) // auto refresh every 5s (sick)
     return () => clearInterval(interval)
   }, [])
 
@@ -48,7 +49,7 @@ function Queue() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h2 className="page-title" style={{ margin: 0 }}>Machine Status</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span className="text-xs text-dim">auto-refreshing</span>
+          <span className="text-xs text-dim">auto-refreshing (every 5s)</span>
           {['', 'running', 'completed', 'failed'].map(f => (
             <button key={f}
               className={`btn ${filter === f ? 'btn-primary' : 'btn-outline'}`}
@@ -63,11 +64,11 @@ function Queue() {
       {error && <div className="error">{error}</div>}
 
       {loading ? (
-        <div className="loading">Loading...</div>
+        <div className="loading">Loading... (yawn)</div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
           <p>No jobs found</p>
-          <div className="sub">Start a job from the Dashboard to see it here</div>
+          <div className="sub">Start a job from the Dashboard to see it here (cmon do something)</div>
         </div>
       ) : (
         <div className="card table-container">
@@ -100,22 +101,22 @@ function Queue() {
                           <>
                             <button className="btn btn-primary btn-sm"
                               onClick={() => n(`/live?jobId=${job.id}&machineId=${job.machine_id}`)}>
-                              Watch
+                              👀 Watch
                             </button>
                             <button className="btn btn-outline btn-sm"
                               onClick={() => endJob(job.id, 'completed')}>
-                              Done
+                              ✅ Done
                             </button>
                             <button className="btn btn-danger btn-sm"
                               onClick={() => endJob(job.id, 'failed')}>
-                              Fail
+                              ❌ Fail
                             </button>
                           </>
                         )}
                         {job.status === 'completed' && (
                           <button className="btn btn-outline btn-sm"
                             onClick={() => n(`/reports/${job.id}`)}>
-                            Report
+                            📄 Report
                           </button>
                         )}
                       </div>

@@ -21,6 +21,7 @@ interface NotificationItem {
   time: string
 }
 
+// the bell icon that shows u stuff (if anything ever happens lol)
 export function NotificationDropdown() {
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
@@ -97,14 +98,14 @@ export function NotificationDropdown() {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-2xl border border-card-border bg-card shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between border-b border-card-border px-4 py-3">
-            <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
+            <h3 className="text-sm font-semibold text-foreground">Alerts</h3>
             {notifications.length > 0 && (
               <button
                 type="button"
                 onClick={() => { setUnreadCount(0); setNotifications([]) }}
                 className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
-                Clear all
+                yeet em
               </button>
             )}
           </div>
@@ -119,8 +120,8 @@ export function NotificationDropdown() {
             {!loading && notifications.length === 0 && (
               <div className="flex flex-col items-center py-10">
                 <Bell className="size-8 text-muted-foreground/30" />
-                <p className="mt-3 text-sm text-muted-foreground">No notifications</p>
-                <p className="text-xs text-muted-foreground/60">All systems are operating normally</p>
+                <p className="mt-3 text-sm text-muted-foreground">nothin here lol</p>
+                <p className="text-xs text-muted-foreground/60">everythings fine i guess</p>
               </div>
             )}
 
@@ -164,7 +165,7 @@ export function NotificationDropdown() {
               onClick={() => setOpen(false)}
               className="flex items-center justify-center border-t border-card-border px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              View all incidents
+              see all drama
             </Link>
           )}
         </div>

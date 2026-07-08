@@ -1,4 +1,5 @@
-// shows the status as a colored badge thingy
+// this shows the colored dot for status (wow so fancy)
+// TODO: add more statuses when the backend makes up new ones lol
 
 function StatusBadge({ status }: { status: string }) {
   const className = `badge badge-${status}`

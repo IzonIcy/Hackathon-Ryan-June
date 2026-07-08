@@ -1,17 +1,19 @@
 """
 FabOps Sentinel - Backend Server
 
-this is the main file that starts everything up
-it creates the fastapi app and connects all the routes
+yo this is like the main file that starts everythin up fr fr
+it creates the fastapi app and hooks up all the routes n stuff
 
 to run: uvicorn main:app --reload
-or: python -m uvicorn main:app --reload
+or like: python -m uvicorn main:app --reload (idk either works lol)
 """
 
 from dotenv import load_dotenv
 from pathlib import Path
 
-# load the .env file so OPENAI_API_KEY is available everywhere
+print("🔥🔥🔥 FabOps Sentinel booting up... 🔥🔥🔥")
+
+# TODO: fix this lol - load the .env file so OPENAI_API_KEY is available everywhere
 load_dotenv(Path(__file__).parent / ".env")
 
 from contextlib import asynccontextmanager
@@ -23,12 +25,12 @@ from routers import machines, jobs, frames, reports, sessions, seed
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    """runs once when the server starts, sets up the database tables"""
+    """runs once when the server starts, sets up the database tables n stuff"""
     init_db()
-    print("=== FabOps Sentinel is running! ===")
+    print("=== FabOps Sentinel is running! (no cap) ===")
     print("API docs at http://localhost:8000/docs")
     yield
-    # cleanup goes here if needed
+    # cleanup goes here if needed (but like, do we even need it? lmao)
 
 
 # create the app!
@@ -39,8 +41,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# this lets the frontend (localhost:5173) talk to the backend
-# without getting CORS errors (that was so annoying to figure out)
+# this took me forever to figure out omg
+# lets the frontend (localhost:5173) talk to the backend
+# without getting CORS errors (that was so annoying to figure out fr fr)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000"],
@@ -49,7 +52,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# connect all the route files
+# maybe we need a healthcheck router too idk
+# app.include_router(health_check_router)  # TODO: fix this lol
+
+# connect all the route files (lowkey there's alot of them)
 app.include_router(machines.router)
 app.include_router(jobs.router)
 app.include_router(frames.router)
@@ -60,10 +66,11 @@ app.include_router(seed.router)
 
 @app.get("/api/health")
 def health_check():
-    """just checks the server is alive"""
+    """just checks the server is alive (hopefully lol)"""
     return {"status": "ok", "service": "FabOps Sentinel"}
 
 
 @app.get("/")
 def root():
+    """home page idk why anyone would go here but whatev"""
     return {"message": "FabOps Sentinel API is running! 🎉"}

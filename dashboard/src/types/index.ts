@@ -1,4 +1,5 @@
-/* ─── API Response Types ───────────────────────────────────────── */
+// these are the types lol
+// dont judge my types they work fr fr
 
 export interface Machine {
   id: number
@@ -13,6 +14,7 @@ export interface Job {
   id: number
   machine_id: number
   job_name: string
+  // TODO: make this nullable? idk
   material: string | null
   estimated_duration: number | null
   status: string
@@ -20,6 +22,7 @@ export interface Job {
   completed_at: string | null
 }
 
+// a single frame from the camera lol
 export interface Frame {
   id: number
   job_id: number
@@ -32,6 +35,7 @@ export interface Frame {
   created_at: string
 }
 
+// something went wrong 💀
 export interface Incident {
   title: string
   description: string
@@ -40,6 +44,7 @@ export interface Incident {
   severity: string
 }
 
+// what the AI saw (spooky)
 export interface Observation {
   time: string
   status: string
@@ -49,6 +54,7 @@ export interface Observation {
   severity: string | null
 }
 
+// the whole report thingy (big boi)
 export interface JobReport {
   job_id: number
   job_name: string
@@ -67,7 +73,7 @@ export interface JobReport {
   incidents: Incident[]
 }
 
-/* ─── UI Types ─────────────────────────────────────────────────── */
+// ui types for the frontend ngl
 
 export type SeverityLevel = "high" | "medium" | "low"
 export type MachineStatus = "running" | "warning" | "error" | "stopped" | "idle" | "unknown"
@@ -82,12 +88,14 @@ export interface StatCardData {
   color: string
 }
 
+// a machine but with extra stuff lmao
 export interface MachineWithMeta extends Machine {
   icon: React.ComponentType<{ className?: string }>
   statusLabel: string
   dotColor: string
 }
 
+// stuff that happened recently
 export interface ActivityItem {
   id: string
   time: string

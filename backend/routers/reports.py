@@ -1,4 +1,4 @@
-"""routes for the incident reports - post job summaries"""
+"""routes for the incident reports - post job summaries (the aftermath)"""
 
 from fastapi import APIRouter, HTTPException
 from database.db import get_connection
@@ -9,10 +9,12 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 
 @router.get("/{job_id}")
 def get_job_report(job_id: int):
-    """get a full report for a specific job"""
+    """get a full report for a specific job (did it survive??)"""
     report = generate_incident_report(job_id)
     if not report:
-        raise HTTPException(status_code=404, detail="couldnt find that job")
+        raise HTTPException(
+            status_code=404, detail="couldnt find that job (ur lost bro)"
+        )
     return report
 
 

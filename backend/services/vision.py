@@ -1,7 +1,11 @@
-"""talks to gpt-4 and asks it to look at pictures of machines
+"""
+yo this talks to chatgpt and asks it to look at pictures of 3d printers lol
 
-theres reference images in backend/reference_images/ that we send to the ai
+so like, theres reference images in backend/reference_images/ that we send to the ai
 so it knows what defects look like (spaghetti, warping, etc)
+ngl this is the coolest part of the whole project fr fr
+
+TODO: add more reference images or something idk
 """
 
 import os
@@ -13,7 +17,7 @@ from httpx import AsyncClient
 API_KEY = os.getenv("OPENAI_API_KEY")
 API_URL = "https://api.openai.com/v1/chat/completions"
 
-# load reference images at startup
+# load reference images at startup (this took me like 4 tries omg)
 REF_GOOD = []
 REF_DEFECT = []
 
@@ -32,47 +36,51 @@ if ref_dir.exists():
         except:
             pass
     print(
-        f"[vision] loaded {len(REF_GOOD)} good + {len(REF_DEFECT)} defect reference images"
+        f"[vision] loaded {len(REF_GOOD)} good + {len(REF_DEFECT)} defect reference images (we got refs fr fr)"
     )
 
-# different prompts for different machines
+# different prompts for different machines (lowkey the 3d printer one is the best)
+# TODO: add prompts for other machines maybe? like a plotter? idk
 PROMPTS = {
     "3d_printer": """
-You are watching a 3D printer. Look at the print bed and nozzle area.
+You are watching a 3D printer (no cap). Look at the print bed and nozzle area.
 Compare the live image against the reference images above.
 
 NORMAL: print is sticking to bed, layers look clean and even, good first layer adhesion.
 
-WARNING - minor issues:
-- STRINGING: thin plastic strings/hairs between walls or on the print surface
-- WARPING: corners of the print lifting slightly off the bed
+WARNING - minor issues (kinda sus but not terrible):
+- STRINGING: thin plastic strings/hairs between walls or on the print surface (looks like spiderwebs)
+- WARPING: corners of the print lifting slightly off the bed (it's curling up like my toast)
 - LAYER SHIFTING: layers slightly misaligned, rough surface texture
-- BLOBBING: small blobs/zits on the surface
+- BLOBBING: small blobs/zits on the surface (like acne but for printers lol)
 - CRACKING: small cracks or delamination between layers
 
-STOP - major failure:
-- SPAGHETTI: extruder printing in mid-air with tangled plastic strings everywhere
+STOP - major failure (BRO SOMETHING IS ON FIRE):
+- SPAGHETTI: extruder printing in mid-air with tangled plastic strings everywhere (yeet)
 - OFF PLATFORM: print detached entirely from the bed and is being dragged around
-- MAJOR LAYER SHIFT: layers shifted significantly, print is ruined
-- NOZZLE CRASH: nozzle digging into the print
+- MAJOR LAYER SHIFT: layers shifted significantly, print is ruined (rip)
+- NOZZLE CRASH: nozzle digging into the print (aggressive behavior fr fr)
 """,
     "laser_cutter": """
 You are watching a laser cutter. Look at the cutting area through the enclosure.
 - NORMAL: clean cut, minimal smoke, material is correct
-- WARNING: more smoke than usual, material starting to char too much, small flame
-- STOP: large flame, lots of smoke, material on fire, wrong material
+- WARNING: more smoke than usual, material starting to char too much, small flame (its alittle warm)
+- STOP: large flame, lots of smoke, material on fire, wrong material (CALL THE FIRE DEPT)
 """,
     "cnc": """
 You are watching a CNC router or mill. Look at the cutting area and workpiece.
 - NORMAL: clean cuts, workpiece is secure, chips are clearing
-- WARNING: workpiece shifting, tool making rough noise (chatter), chips building up
-- STOP: workpiece came loose, tool broken, zero position lost, crash
+- WARNING: workpiece shifting, tool making rough noise (chatter), chips building up (thats not good lol)
+- STOP: workpiece came loose, tool broken, zero position lost, crash (she's done for)
 """,
 }
 
 
 async def analyze_image(machine_type, image_base64, api_key=None):
-    """sends the image to gpt-4 and gets back what it thinks"""
+    """
+    sends the image to gpt-4 and gets back what it thinks (fingers crossed it works lol)
+    lowkey gpt-4o-mini is goated for this kinda stuff
+    """
     key = api_key or API_KEY
     if not key:
         return {
@@ -195,12 +203,12 @@ Severity can be: low, medium, high
             }
 
     except Exception as e:
-        print(f"ai analysis failed: {e}")
+        print(f"ai analysis failed (bro what did u do): {e}")
         return {
             "status": "unknown",
             "confidence": 0.0,
-            "observation": f"AI analysis failed: {str(e)}",
+            "observation": f"AI analysis failed: {str(e)} (ngl this is kinda embarrasing)",
             "probable_cause": None,
-            "recommended_action": "Check your API key and internet.",
+            "recommended_action": "Check your API key and internet. Or yell at the printer idk.",
             "severity": "low",
         }

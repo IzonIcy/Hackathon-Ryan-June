@@ -1,4 +1,4 @@
-"""routes for machines - cameras, printers, lasers, cncs"""
+"""routes for machines - cameras, printers, lasers, cncs (the hardware stuff)"""
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -8,14 +8,16 @@ router = APIRouter(prefix="/api/machines", tags=["machines"])
 
 
 class CreateMachineRequest(BaseModel):
+    """what you send when adding a new machine to the system"""
+
     name: str
-    machine_type: str = "camera"
-    device_id: str | None = None
+    machine_type: str = "camera"  # default to camera cuz thats what most ppl use
+    device_id: str | None = None  # like a serial number or whatever idk
 
 
 @router.get("")
 def list_machines():
-    """returns all machines so the dashboard can show them"""
+    """returns all machines so the dashboard can show them (this is the list of machines btw)"""
     conn = get_connection()
     machines = conn.execute("SELECT * FROM machines ORDER BY name").fetchall()
     conn.close()
@@ -24,7 +26,7 @@ def list_machines():
 
 @router.post("")
 def create_machine(req: CreateMachineRequest):
-    """creates a new machine (camera monitor)"""
+    """creates a new machine (camera monitor) - welcome to the family lil guy"""
     conn = get_connection()
     cur = conn.execute(
         "INSERT INTO machines (name, machine_type, device_id) VALUES (?, ?, ?)",
@@ -40,13 +42,16 @@ def create_machine(req: CreateMachineRequest):
 
 @router.get("/{machine_id}")
 def get_machine(machine_id: int):
+    """get one machine by its id (hopefully it exists lol)"""
     conn = get_connection()
     machine = conn.execute(
         "SELECT * FROM machines WHERE id = ?", (machine_id,)
     ).fetchone()
     conn.close()
     if not machine:
-        raise HTTPException(status_code=404, detail="machine not found")
+        raise HTTPException(
+            status_code=404, detail="machine not found (it vanished into the void)"
+        )
     return dict(machine)
 
 
@@ -56,7 +61,8 @@ def update_machine_status(machine_id: int, status: str):
     allowed = ["idle", "running", "paused", "stopped"]
     if status not in allowed:
         raise HTTPException(
-            status_code=400, detail=f"status has to be one of: {allowed}"
+            status_code=400,
+            detail=f"status has to be one of: {allowed} (bro read the docs)",
         )
 
     conn = get_connection()
@@ -68,20 +74,25 @@ def update_machine_status(machine_id: int, status: str):
     conn.close()
 
     if not machine:
-        raise HTTPException(status_code=404, detail="machine not found")
+        raise HTTPException(
+            status_code=404, detail="machine not found (where did it go fr fr)"
+        )
     return dict(machine)
 
 
 @router.delete("/{machine_id}")
 def delete_machine(machine_id: int):
-    """removes a machine monitor"""
+    """removes a machine monitor (rip machine 🫡)"""
     conn = get_connection()
     machine = conn.execute(
         "SELECT * FROM machines WHERE id = ?", (machine_id,)
     ).fetchone()
     if not machine:
         conn.close()
-        raise HTTPException(status_code=404, detail="machine not found")
+        raise HTTPException(
+            status_code=404,
+            detail="machine not found (cant delete what doesnt exist lol)",
+        )
     conn.execute("DELETE FROM machines WHERE id = ?", (machine_id,))
     conn.commit()
     conn.close()

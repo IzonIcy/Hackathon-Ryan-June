@@ -22,7 +22,7 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
   const [loading, setLoading] = useState(true)
   const [lastMsg, setLastMsg] = useState<string | null>(null)
 
-  // start the camera
+  // start the camera (plz work plz work plz work)
   useEffect(() => {
     let dead = false
     async function start() {
@@ -38,6 +38,7 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
         if (videoRef.current) videoRef.current.srcObject = stream
       } catch (err: any) {
         if (dead) return
+        console.log('bruh the camera died', err)
         setError(err.message || "camera failed")
       } finally {
         if (!dead) setLoading(false)
@@ -52,7 +53,8 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
     }
   }, [deviceId])
 
-  // capture frames every 3 seconds when monitoring
+  // yo this captures frames from ur webcam every 3 secs lol
+  // its like a security camera but cooler (and more sus)
   useEffect(() => {
     if (!isMonitoring || !jobId) {
       if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
@@ -64,11 +66,13 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
       if (!v || !c || !v.videoWidth) return
       c.width = v.videoWidth
       c.height = v.videoHeight
+      // this is how we spy on ur 3d printer fr fr
+      // canvas hack goes brrr
       c.getContext("2d")?.drawImage(v, 0, 0)
       const b64 = c.toDataURL("image/jpeg", 0.7).split(",")[1]
       analyzeFrame({ job_id: jobId, image: b64 })
         .then(f => { if (f.observation) setLastMsg(f.observation) })
-        .catch(() => {})
+        .catch(() => { console.log('frame analysis failed lol') })
     }
     snap()
     intervalRef.current = setInterval(snap, 3000)
@@ -79,7 +83,7 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
     return (
       <div className="glass-card flex flex-col items-center justify-center rounded-2xl p-16">
         <CameraOff className="size-10 text-destructive" />
-        <h3 className="mt-4 text-lg font-medium">Camera Error</h3>
+        <h3 className="mt-4 text-lg font-medium">camera broke lol</h3>
         <p className="mt-2 text-sm text-muted-foreground">{error}</p>
       </div>
     )
@@ -91,7 +95,7 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
         {loading && (
           <div className="flex h-64 items-center justify-center">
             <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="ml-3 text-sm text-muted-foreground">Starting camera...</p>
+            <p className="ml-3 text-sm text-muted-foreground">loading camera... be patient lol</p>
           </div>
         )}
         <video ref={videoRef} autoPlay muted playsInline
@@ -102,7 +106,7 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
         {isMonitoring && !loading && (
           <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1.5">
             <span className="size-2 animate-ping rounded-full bg-white" />
-            <span className="text-xs font-medium text-white">REC</span>
+            <span className="text-xs font-medium text-white">RECORDING FR FR</span>
           </div>
         )}
 
@@ -116,11 +120,11 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
       <div className="flex items-center gap-3">
         {isMonitoring ? (
           <Button variant="danger" size="sm" className="gap-2" onClick={onStopMonitoring}>
-            <Square className="size-3.5" /> Stop Monitoring
+            <Square className="size-3.5" /> Stop Watching
           </Button>
         ) : (
           <Button variant="primary" size="sm" className="gap-2" onClick={onStartMonitoring}>
-            <Play className="size-3.5" /> Start Monitoring
+            <Play className="size-3.5" /> Watch It
           </Button>
         )}
       </div>

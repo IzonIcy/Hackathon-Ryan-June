@@ -12,10 +12,15 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// where u tryna go??
 const navItems = [
+  // home page duh
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  // see all ur machines here
   { href: "/machines", label: "Monitors", icon: Cpu },
+  // where the drama goes
   { href: "/incidents", label: "Incidents", icon: AlertTriangle },
+  // boring reports nobody reads
   { href: "/reports", label: "Reports", icon: FileText },
 ]
 
@@ -31,16 +36,16 @@ export function Sidebar() {
         </div>
         <div>
           <span className="text-sm font-semibold text-sidebar-text-active">
-            FabOps Sentinel
+            PrinterWatch™
           </span>
-          <p className="text-[10px] text-sidebar-text">AI Observability</p>
+          <p className="text-[10px] text-sidebar-text">we watch ur printer fr fr</p>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-5">
         <p className="mb-3 px-2 text-[10px] font-medium uppercase tracking-widest text-sidebar-text">
-          Overview
+          where u at
         </p>
         {navItems.map((item) => {
           const isActive =
@@ -72,11 +77,12 @@ export function Sidebar() {
       {/* Status Footer */}
       <div className="border-t border-sidebar-border px-5 py-4">
         <div className="flex items-center gap-2.5">
+          {/* green pulse = everything is fine (for now...) */}
           <span className="relative flex size-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-success)] opacity-75" />
             <span className="relative inline-flex size-2 rounded-full bg-[var(--color-success)]" />
           </span>
-          <span className="text-xs text-sidebar-text">All Systems Normal</span>
+          <span className="text-xs text-sidebar-text">everything fine (no cap)</span>
         </div>
       </div>
     </aside>

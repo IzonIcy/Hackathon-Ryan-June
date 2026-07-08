@@ -182,6 +182,8 @@ body {
 .status-dot.idle::after { display: none; }
 .status-dot.unknown { background: #5c6476; }
 .status-dot.unknown::after { display: none; }
+.status-dot.offline { background: #5c6476; }
+.status-dot.offline::after { display: none; }
 
 /* ─── Premium Focus Ring ───────────────────────────────────────── */
 .premium-ring {

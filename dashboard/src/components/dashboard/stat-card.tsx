@@ -21,7 +21,7 @@ export function StatCard({ title, value, icon: Icon, color, trend, change, index
       transition={{ type: "spring", stiffness: 300, damping: 24, delay: index * 0.06 }}
     >
       <div className="glass-card group relative overflow-hidden rounded-2xl p-5">
-        {/* Subtle gradient accent */}
+        {/* this is the card that shows numbers and stuff lol */}
         <div
           className="absolute -right-12 -top-12 size-32 rounded-full opacity-[0.04] transition-all duration-500 group-hover:opacity-[0.08]"
           style={{ background: `radial-gradient(circle, ${color}, transparent)` }}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import {
   Monitor,
@@ -20,16 +20,19 @@ import { MachineCard } from "@/components/dashboard/machine-card"
 import { ActivityFeed } from "@/components/dashboard/activity-feed"
 import { AiInsightCard } from "@/components/dashboard/ai-insight-card"
 
+// animation stuff idk what im doing lol
 const containerVariants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.06 } },
 }
 
+// each card flys in like 👀
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } },
 }
 
+// loading skeleton thingy (looks cool ig)
 function Skeleton({ className }: { className?: string }) {
   return (
     <div
@@ -43,6 +46,7 @@ function Skeleton({ className }: { className?: string }) {
 
 export default function DashboardPage() {
   const [clearing, setClearing] = useState(false)
+  const [activeCamIds, setActiveCamIds] = useState<string[]>([])
 
   const { data: machines, loading: machinesLoading, refetch: refetchMachines } = useApi(
     (signal) => api.getMachines(signal),
@@ -57,7 +61,73 @@ export default function DashboardPage() {
     [],
   )
 
-  // auto-refresh every 5 seconds so the dashboard stays in sync
+  // auto-sync local cameras with the backend SQLite database
+  useEffect(() => {
+    async function syncLocalCameras() {
+      if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.mediaDevices) return
+
+      try {
+        // 1. Try to check/request permission so we get labels
+        let devices = await navigator.mediaDevices.enumerateDevices()
+        let videoDevices = devices.filter((d) => d.kind === "videoinput")
+        let hasLabels = videoDevices.some((d) => d.label)
+
+        if (!hasLabels) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+            for (const track of stream.getTracks()) track.stop()
+            devices = await navigator.mediaDevices.enumerateDevices()
+            videoDevices = devices.filter((d) => d.kind === "videoinput")
+            hasLabels = true
+          } catch {
+            // permission denied or no camera available
+          }
+        }
+
+        // 2. Map active camera deviceIds
+        const activeIds = videoDevices.map((d) => d.deviceId).filter(Boolean)
+        setActiveCamIds(activeIds)
+
+        // 3. Fetch machines to check for missing registrations
+        const existingMachines = await api.getMachines()
+        let changed = false
+
+        for (const cam of videoDevices) {
+          const devId = cam.deviceId
+          if (!devId) continue
+
+          const machine = existingMachines.find((m) => m.device_id === devId)
+          if (!machine) {
+            const name = cam.label.replace(/\s*\(.*\)$/, "").trim() || `Camera ${devId.slice(0, 8)}`
+            await api.createMachine({
+              name,
+              device_id: devId,
+              machine_type: "camera",
+            })
+            changed = true
+          }
+        }
+
+        if (changed) {
+          refetchMachines()
+        }
+      } catch (err) {
+        console.error("Failed to auto-sync local cameras:", err)
+      }
+    }
+
+    syncLocalCameras()
+
+    if (typeof window !== "undefined" && typeof navigator !== "undefined" && navigator.mediaDevices) {
+      navigator.mediaDevices.addEventListener("devicechange", syncLocalCameras)
+      return () => {
+        navigator.mediaDevices.removeEventListener("devicechange", syncLocalCameras)
+      }
+    }
+  }, [refetchMachines])
+
+  // lol refresh every 5 seconds so dashboard doesnt get stale
+  // TODO: maybe make this configurable? idk
   usePolling(() => {
     refetchMachines()
     refetchJobs()
@@ -70,7 +140,7 @@ export default function DashboardPage() {
       await api.clearAllData()
       await Promise.all([refetchMachines(), refetchJobs(), refetchReports()])
     } catch {
-      // ignore
+      // silently fail lol
     } finally {
       setClearing(false)
     }
@@ -98,13 +168,18 @@ export default function DashboardPage() {
         ? Math.round((totalConfidence / allObservations.length) * 100)
         : null
 
+    const connectedMonitors = m.filter((machine) =>
+      machine.device_id ? activeCamIds.includes(machine.device_id) : true
+    ).length
+
     return {
       totalMonitors: m.length,
+      connectedMonitors,
       activeSessions,
       incidentsToday,
       aiConfidence: avgConfidence,
     }
-  }, [machines, jobs, reports])
+  }, [machines, jobs, reports, activeCamIds])
 
   const activityIncidents = useMemo(() => {
     if (!reports) return []
@@ -178,7 +253,7 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">
-            FabOps Sentinel — AI Observability Platform
+            FabOps Sentinel — watches ur 3d printer so u dont have to lol
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -188,11 +263,11 @@ export default function DashboardPage() {
             disabled={clearing}
             className="rounded-lg border border-[var(--color-muted)] px-3 py-1.5 text-[11px] font-medium text-[var(--color-muted-foreground)] transition-colors hover:border-destructive/40 hover:text-destructive disabled:opacity-40"
           >
-            {clearing ? "Clearing..." : "Clear Test Data"}
+            {clearing ? "Clearing..." : "Yeet the test data"}
           </button>
           <Badge variant="premium" className="px-3 py-1 text-xs">
             <Zap className="mr-1 size-3.5" />
-            Live
+            LIVE 🔥
           </Badge>
         </div>
       </motion.div>
@@ -204,7 +279,7 @@ export default function DashboardPage() {
       >
         <StatCard
           title="Total Monitors"
-          value={stats.totalMonitors}
+          value={stats.connectedMonitors}
           icon={Monitor}
           trend={null}
           change={null}
@@ -243,27 +318,30 @@ export default function DashboardPage() {
       {/* Activity + Active Monitors */}
       <motion.div
         variants={containerVariants}
-        className="grid grid-cols-1 gap-4 lg:grid-cols-5"
+        className="grid grid-cols-1 gap-4 lg:grid-cols-5 items-stretch"
       >
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 flex flex-col">
           <ActivityFeed incidents={activityIncidents} />
         </div>
 
-        <div className="lg:col-span-2">
-          <div className="glass-card rounded-2xl p-5">
+        <div className="lg:col-span-2 flex flex-col">
+          <div className="glass-card flex flex-col flex-1 rounded-2xl p-5 min-h-[340px]">
             <h3 className="mb-4 text-xs font-medium uppercase tracking-wider text-[var(--color-muted-foreground)]">
               Active Monitors
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1 overflow-y-auto pr-1">
               {machines && machines.length > 0 ? (
-                machines.map((machine, i) => (
-                  <MachineCard key={machine.id} machine={machine} index={i} />
-                ))
+                machines.map((machine, i) => {
+                  const isOffline = machine.device_id ? !activeCamIds.includes(machine.device_id) : false
+                  return (
+                    <MachineCard key={machine.id} machine={machine} index={i} isOffline={isOffline} />
+                  )
+                })
               ) : (
-                <div className="flex flex-col items-center justify-center py-12">
+                <div className="flex flex-1 flex-col items-center justify-center py-12">
                   <Monitor className="size-10 text-[var(--color-muted-foreground)]/40" />
                   <p className="mt-3 text-sm text-[var(--color-muted-foreground)]">
-                    No machines configured
+                  No machines yet lol
                   </p>
                 </div>
               )}
@@ -272,7 +350,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* AI Observations */}
+      {/* AI Observations (the spooky AI stuff) */}
       <motion.div variants={containerVariants} className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-[var(--color-foreground)]">
@@ -298,10 +376,10 @@ export default function DashboardPage() {
           <div className="glass-card flex flex-col items-center justify-center rounded-2xl py-16">
             <BrainCircuit className="size-12 text-[var(--color-muted-foreground)]/30" />
             <p className="mt-4 text-sm text-[var(--color-muted-foreground)]">
-              No AI observations yet
+              Nothin to see here yet tbh
             </p>
             <p className="mt-1 text-xs text-[var(--color-muted-foreground)]/60">
-              Observations will appear as frames are analyzed
+              fr fr observations show up when frames get analyzed
             </p>
           </div>
         )}
