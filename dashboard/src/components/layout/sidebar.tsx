@@ -38,9 +38,8 @@ export function Sidebar() {
         </div>
         <div>
           <span className="text-sm font-semibold text-sidebar-text-active">
-            PrinterWatch™
+            FabOps Sentinel
           </span>
-          <p className="text-[10px] text-sidebar-text">we watch ur printer fr fr</p>
         </div>
       </div>
 
