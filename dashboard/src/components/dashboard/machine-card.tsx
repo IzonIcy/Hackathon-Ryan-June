@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Printer, Zap, Cpu, Eye, Camera } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import type { Machine } from "@/types"
 
 interface MachineCardProps {
@@ -29,9 +30,7 @@ const statusConfig: Record<string, { label: string; dotClass: string }> = {
 }
 
 export function MachineCard({ machine, index = 0, isOffline = false }: MachineCardProps) {
-  // which icon do we use?? idk lol default to CPU i guess
   const Icon = machineIcons[machine.machine_type] ?? Cpu
-  // what status is our boi?? if its not in the list just say idle lmao
   const status = isOffline ? statusConfig.offline : (statusConfig[machine.status] ?? statusConfig.idle)
 
   return (
@@ -41,23 +40,35 @@ export function MachineCard({ machine, index = 0, isOffline = false }: MachineCa
       transition={{ type: "spring", stiffness: 300, damping: 24, delay: index * 0.05 }}
     >
       <Link href={`/machines/${machine.id}`}>
-        <div className="group flex items-center gap-3 rounded-xl border border-white/[0.04] bg-white/[0.02] p-3.5 transition-all duration-200 hover:bg-white/[0.06] hover:border-white/[0.08] shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-muted)]">
-            <Icon className="size-4 text-[var(--color-muted-foreground)]" />
-          </div>
+        <div className="group relative overflow-hidden rounded-xl border border-white/[0.04] bg-white/[0.02] p-3.5 transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.1] hover:shadow-[0_4px_24px_-4px_rgba(99,102,241,0.2)]">
+          
+          {/* Subtle animated gradient background on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-accent/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          
+          <div className="relative flex items-center gap-4">
+            <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--color-muted)] border border-white/[0.05]">
+              {/* Optional image logic here */}
+              {machine.machine_type === '3d_printer' ? (
+                 <Image src="/3d_printer.jpg" alt="3D Printer" fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" />
+              ) : (
+                <Icon className="size-5 text-[var(--color-muted-foreground)] group-hover:text-primary transition-colors" />
+              )}
+            </div>
 
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-[var(--color-foreground)] transition-colors group-hover:text-[var(--color-primary)]">
-              {machine.name}
-            </p>
-            <div className="mt-0.5 flex items-center gap-1.5">
-              {/* green dot means its workin fr fr */}
-              <span className={`status-dot ${status.dotClass}`} style={{ width: 5, height: 5 }} />
-              <span className="text-xs text-[var(--color-muted-foreground)]">{status.label}</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-[var(--color-foreground)] transition-colors group-hover:text-[var(--color-primary)]">
+                {machine.name}
+              </p>
+              <div className="mt-1 flex items-center gap-2">
+                <span className={`status-dot ${status.dotClass}`} style={{ width: 6, height: 6 }} />
+                <span className="text-xs font-medium text-[var(--color-muted-foreground)] uppercase tracking-wide">{status.label}</span>
+              </div>
+            </div>
+
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.03] transition-all group-hover:bg-primary/20">
+               <Eye className="size-4 shrink-0 text-[var(--color-muted-foreground)] transition-all duration-300 group-hover:text-primary" />
             </div>
           </div>
-
-          <Eye className="size-4 shrink-0 text-[var(--color-muted-foreground)] opacity-0 transition-all duration-200 group-hover:opacity-100" />
         </div>
       </Link>
     </motion.div>

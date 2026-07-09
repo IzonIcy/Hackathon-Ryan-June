@@ -18,6 +18,8 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   // see all ur machines here
   { href: "/machines", label: "Monitors", icon: Cpu },
+  // analytics for the business guys
+  { href: "/analytics", label: "Analytics", icon: Activity },
   // where the drama goes
   { href: "/incidents", label: "Incidents", icon: AlertTriangle },
   // boring reports nobody reads

@@ -15,5 +15,13 @@ venv/
 frontend/node_modules/
 frontend/dist/
 
+# dashboard
+dashboard/node_modules/
+dashboard/.next/
+
+# java tools and build
+tools/
+backend-java/target/
+
 # env
 .env

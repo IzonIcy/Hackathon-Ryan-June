@@ -11,7 +11,7 @@ or like: python -m uvicorn main:app --reload (idk either works lol)
 from dotenv import load_dotenv
 from pathlib import Path
 
-print("🔥🔥🔥 FabOps Sentinel booting up... 🔥🔥🔥")
+print("FabOps Sentinel booting up...")
 
 # TODO: fix this lol - load the .env file so OPENAI_API_KEY is available everywhere
 load_dotenv(Path(__file__).parent / ".env")
