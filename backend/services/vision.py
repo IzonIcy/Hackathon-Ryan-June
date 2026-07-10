@@ -15,7 +15,9 @@ from pathlib import Path
 from httpx import AsyncClient
 
 API_KEY = os.getenv("OPENAI_API_KEY")
-API_URL = "https://api.openai.com/v1/chat/completions"
+API_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+API_URL = API_BASE_URL + "/chat/completions"
+MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
 # load reference images at startup (this took me like 4 tries omg)
 REF_GOOD = []
@@ -170,7 +172,7 @@ Severity can be: low, medium, high
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "gpt-4o-mini",
+                    "model": MODEL,
                     "messages": [{"role": "user", "content": content}],
                     "max_tokens": 300,
                     "temperature": 0.3,

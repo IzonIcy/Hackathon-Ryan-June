@@ -11,9 +11,11 @@ interface Props {
   onStartMonitoring?: () => void
   onStopMonitoring?: () => void
   isMonitoring?: boolean
+  /** How often to capture & analyze frames (in ms). Default 3000. Set to 0 to only capture manually. */
+  intervalMs?: number
 }
 
-export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonitoring, isMonitoring = false }: Props) {
+export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonitoring, isMonitoring = false, intervalMs = 3000 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -53,7 +55,7 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
     }
   }, [deviceId])
 
-  // yo this captures frames from ur webcam every 3 secs lol
+  // captures frames from ur webcam at whatever interval you want lol
   // its like a security camera but cooler (and more sus)
   useEffect(() => {
     if (!isMonitoring || !jobId) {
@@ -75,9 +77,11 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
         .catch(() => { console.log('frame analysis failed lol') })
     }
     snap()
-    intervalRef.current = setInterval(snap, 3000)
+    if (intervalMs > 0) {
+      intervalRef.current = setInterval(snap, intervalMs)
+    }
     return () => { if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null } }
-  }, [isMonitoring, jobId])
+  }, [isMonitoring, jobId, intervalMs])
 
   if (error) {
     return (

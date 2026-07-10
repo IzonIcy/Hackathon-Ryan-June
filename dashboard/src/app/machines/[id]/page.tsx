@@ -455,6 +455,7 @@ export default function MachineDetailPage() {
               isMonitoring={isMonitoring}
               onStartMonitoring={handleStartMonitoring}
               onStopMonitoring={handleStopMonitoring}
+              intervalMs={30000}
             />
 
             {isMonitoring && (
