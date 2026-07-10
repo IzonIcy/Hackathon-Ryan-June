@@ -90,6 +90,25 @@ def health_check():
     return {"status": "ok", "service": "FabOps Sentinel"}
 
 
+@app.get("/api/debug/env")
+def debug_env():
+    """check environment config without exposing secrets (for debugging)"""
+    import services.vision as vision
+
+    key_status = "set" if vision.API_KEY else "not set"
+    env_key_status = "set" if os.environ.get("OPENAI_API_KEY") else "not set"
+    return {
+        "vision_module_api_key": key_status,
+        "os_environ_api_key": env_key_status,
+        "env_file_exists": Path(__file__).parent.joinpath(".env").exists(),
+        "env_file_path": str(Path(__file__).parent / ".env"),
+        "base_url": vision.API_BASE_URL,
+        "model": vision.MODEL,
+        "reference_images": f"{len(vision.REF_GOOD)} good, {len(vision.REF_DEFECT)} defect",
+        "note": "Go to http://localhost:8000/api/debug/env in your browser to check",
+    }
+
+
 @app.get("/")
 def root():
     """home page idk why anyone would go here but whatev"""

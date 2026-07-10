@@ -99,7 +99,18 @@ async def analyze_image(machine_type, image_base64, api_key=None):
     sends the image to gpt-4 and gets back what it thinks (fingers crossed it works lol)
     lowkey gpt-4o-mini is goated for this kinda stuff
     """
+    # Try to find the key in order: passed arg > module-level var > os.environ
+    # This handles the case where .env wasn't loaded at module-import time
+    # (e.g., friend just cloned the repo and hasn't created .env yet)
     key = api_key or API_KEY
+    if not key:
+        key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        # One more try: maybe .env exists but didn't load. Try loading it now.
+        _try_load = Path(__file__).parent.parent / ".env"
+        if _try_load.exists():
+            load_dotenv(_try_load)
+            key = os.environ.get("OPENAI_API_KEY")
     if not key:
         return {
             "status": "unknown",
