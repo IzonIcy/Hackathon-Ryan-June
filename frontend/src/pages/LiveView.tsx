@@ -216,14 +216,13 @@ function LiveView() {
           background: '#000', borderRadius: 'var(--radius-lg)', overflow: 'hidden',
           position: 'relative', minHeight: 200,
         }}>
-          {!cam ? (
+          {!cam && (
             <div className="camera-placeholder">
-              {err ? 'Camera error - check permissions' : 'Starting camera...'}
+              {err ? `Camera error - check permissions: ${err}` : 'Starting camera...'}
             </div>
-          ) : (
-            <video ref={vr} autoPlay playsInline muted
-              style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }} />
           )}
+          <video ref={vr} autoPlay playsInline muted
+            style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: cam ? 'block' : 'none' }} />
           <canvas ref={cr} style={{ display: 'none' }} /> {/* hidden canvas for capturing frames (shh) */}
 
           {watch && (
