@@ -104,9 +104,9 @@ async def analyze_image(machine_type, image_base64, api_key=None):
         return {
             "status": "unknown",
             "confidence": 0.0,
-            "observation": "No API key set. Check the .env file has OPENAI_API_KEY set and restart the server.",
+            "observation": "No API key found. Copy backend/.env.example to backend/.env and fill in your OPENAI_API_KEY.",
             "probable_cause": "OPENAI_API_KEY environment variable is missing or empty",
-            "recommended_action": "Open backend/.env and make sure OPENAI_API_KEY is set. Then restart the server.",
+            "recommended_action": "Run: cp backend/.env.example backend/.env, then edit the file with your API key. Then restart the server.",
             "severity": "low",
         }
 
