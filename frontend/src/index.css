@@ -1,18 +1,20 @@
 /* FabOps Sentinel - proper design system (NOT vibe-coded lol) */
 /* uses css variables so we dont have hex codes everywhere (im lazy ok) */
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-  /* colors (i picked these myself they look fire) */
-  --bg-primary: #0a0f1e;
-  --bg-secondary: #0f172a;
-  --bg-card: #1a2335;
-  --bg-card-hover: #1e293b;
-  --bg-elevated: #1e293b;
-  --border: #2a3a52;
-  --border-light: #334155;
-  --border-accent: #3b82f6;
-  --text-primary: #f1f5f9;
-  --text-secondary: #e2e8f0;
+  /* Premium Dark Mode Colors */
+  --bg-primary: #030712;
+  --bg-secondary: rgba(15, 23, 42, 0.4);
+  --bg-card: rgba(15, 23, 42, 0.6);
+  --bg-card-hover: rgba(30, 41, 59, 0.8);
+  --bg-elevated: rgba(30, 41, 59, 0.6);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(56, 189, 248, 0.5);
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
   --text-very-dim: #475569;
@@ -20,23 +22,23 @@
   /* accent colors */
   --blue: #0ea5e9;
   --blue-bright: #38bdf8;
-  --purple: #6366f1;
-  --green: #22c55e;
-  --green-bg: #064e3b;
-  --green-border: #065f46;
-  --yellow: #eab308;
-  --yellow-bg: #451a03;
-  --yellow-border: #78350f;
+  --purple: #8b5cf6;
+  --green: #10b981;
+  --green-bg: rgba(16, 185, 129, 0.1);
+  --green-border: rgba(16, 185, 129, 0.2);
+  --yellow: #f59e0b;
+  --yellow-bg: rgba(245, 158, 11, 0.1);
+  --yellow-border: rgba(245, 158, 11, 0.2);
   --red: #ef4444;
-  --red-bg: #450a0a;
-  --red-border: #7f1d1d;
+  --red-bg: rgba(239, 68, 68, 0.1);
+  --red-border: rgba(239, 68, 68, 0.2);
   --red-glow: rgba(239, 68, 68, 0.5);
 
   /* gradients (fancy transitions go brrr) */
-  --gradient-header: linear-gradient(135deg, #0f172a 0%, #1a2335 100%);
-  --gradient-primary: linear-gradient(135deg, #0ea5e9, #6366f1);
-  --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
-  --gradient-card: linear-gradient(145deg, #1a2335, #1e293b);
+  --gradient-header: rgba(3, 7, 18, 0.7);
+  --gradient-primary: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+  --gradient-danger: linear-gradient(135deg, #ef4444, #f43f5e);
+  --gradient-card: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
 
   /* spacing (pixels go brrr) */
   --space-xs: 4px;
@@ -71,8 +73,10 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
+  background-image: radial-gradient(circle at 50% -20%, rgba(30, 27, 75, 0.5) 0%, var(--bg-primary) 60%);
+  background-attachment: fixed;
   color: var(--text-secondary);
   min-height: 100vh;
 }
@@ -97,12 +101,14 @@ body {
 /* ============ HEADER (the top part) ============ */
 .header {
   background: var(--gradient-header);
-  border-bottom: 1px solid #1e3a5f;
+  border-bottom: 1px solid var(--border);
   padding: 14px var(--space-3xl);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -222,7 +228,9 @@ body {
   border-radius: var(--radius-lg);
   padding: var(--space-xl) var(--space-xl);
   transition: all var(--transition-normal);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .card:hover {
@@ -460,10 +468,15 @@ body {
   border-radius: var(--radius-md);
   padding: 18px 14px;
   text-align: center;
-  transition: border-color var(--transition-fast);
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 
-.stat-box:hover { border-color: var(--border-accent); }
+.stat-box:hover { 
+  border-color: var(--border-accent); 
+  transform: translateY(-2px);
+}
 
 .stat-box .number {
   font-size: 30px;

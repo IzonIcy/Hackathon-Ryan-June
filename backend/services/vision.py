@@ -116,35 +116,28 @@ Severity can be: low, medium, high
     content = [{"type": "text", "text": system_prompt}]
 
     if REF_GOOD:
-        content.append({"type": "text", "text": "Reference image of a GOOD print:"})
-        content.append(
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{REF_GOOD[0]}",
-                    "detail": "low",
-                },
-            }
-        )
-    if REF_DEFECT:
-        content.append(
-            {"type": "text", "text": "Reference image of a DEFECT (spaghetti/error):"}
-        )
-        content.append(
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{REF_DEFECT[0]}",
-                    "detail": "low",
-                },
-            }
-        )
-        if len(REF_DEFECT) > 1:
+        content.append({"type": "text", "text": "Reference images of GOOD prints:"})
+        for img in REF_GOOD:
             content.append(
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": f"data:image/jpeg;base64,{REF_DEFECT[1]}",
+                        "url": f"data:image/jpeg;base64,{img}",
+                        "detail": "low",
+                    },
+                }
+            )
+            
+    if REF_DEFECT:
+        content.append(
+            {"type": "text", "text": "Reference images of DEFECTS (spaghetti/error):"}
+        )
+        for img in REF_DEFECT:
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{img}",
                         "detail": "low",
                     },
                 }
