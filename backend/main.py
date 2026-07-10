@@ -22,7 +22,8 @@ if _env_file.exists():
 else:
     print(f"[config] ⚠️  .env file NOT FOUND at {_env_file}")
     print(f"[config]    Copy .env.example to .env and add your keys:")
-    print(f"[config]    cp {_env_file}.example {_env_file}")
+    print(f"[config]    On Mac/Linux:  cp {_env_file}.example {_env_file}")
+    print(f"[config]    On Windows:    copy {_env_file}.example {_env_file}")
     print(f"[config]    cwd={Path.cwd()}, __file__={__file__}")
 
 # check if the API key was loaded (saves us from debugging later lol)

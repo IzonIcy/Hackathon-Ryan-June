@@ -35,7 +35,10 @@ source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # IMPORTANT: Create your .env file from the template
+# Mac / Linux:
 cp .env.example .env
+# Windows:
+copy .env.example .env
 # Then edit .env and put in your API key
 ```
 
@@ -197,9 +200,13 @@ Copy backend/.env.example to backend/.env and fill in your OPENAI_API_KEY
 **Fix:**
 ```bash
 cd backend
+# Mac / Linux:
 cp .env.example .env
-# Then edit .env with your actual API key
+# Windows:
+copy .env.example .env
 ```
+
+Then edit `.env` and replace `sk-your-key-here` with your actual API key. Restart the server.
 
 ### "AI analysis failed: 413 Payload Too Large"
 
