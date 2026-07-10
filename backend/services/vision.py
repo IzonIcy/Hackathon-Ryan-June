@@ -12,9 +12,25 @@ import os
 import json
 import base64
 from pathlib import Path
+from dotenv import load_dotenv
 from httpx import AsyncClient
 
+# ---- Load .env as fallback (belt AND suspenders) ----
+# main.py also loads .env, but this ensures vision.py always finds the key
+# even when run in weird contexts or hot-reload edge cases.
+_env_path = Path(__file__).parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(_env_path)
+    print(f"[vision] loaded .env from {_env_path}")
+else:
+    print(f"[vision] ⚠️  .env NOT FOUND at {_env_path}")
+
 API_KEY = os.getenv("OPENAI_API_KEY")
+if API_KEY:
+    print(f"[vision] OPENAI_API_KEY found: {API_KEY[:15]}...")
+else:
+    print("[vision] ⚠️  OPENAI_API_KEY is NOT SET — AI analysis will fail!")
+
 API_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 API_URL = API_BASE_URL + "/chat/completions"
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -88,9 +104,9 @@ async def analyze_image(machine_type, image_base64, api_key=None):
         return {
             "status": "unknown",
             "confidence": 0.0,
-            "observation": "No API key set. Set the OPENAI_API_KEY env variable.",
-            "probable_cause": None,
-            "recommended_action": "Set up your OpenAI API key and restart.",
+            "observation": "No API key set. Check the .env file has OPENAI_API_KEY set and restart the server.",
+            "probable_cause": "OPENAI_API_KEY environment variable is missing or empty",
+            "recommended_action": "Open backend/.env and make sure OPENAI_API_KEY is set. Then restart the server.",
             "severity": "low",
         }
 
@@ -127,7 +143,7 @@ Severity can be: low, medium, high
                     },
                 }
             )
-            
+
     if REF_DEFECT:
         content.append(
             {"type": "text", "text": "Reference images of DEFECTS (spaghetti/error):"}

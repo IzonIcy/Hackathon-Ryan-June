@@ -14,8 +14,14 @@ import os
 
 print("FabOps Sentinel booting up...")
 
-# TODO: fix this lol - load the .env file so OPENAI_API_KEY is available everywhere
-load_dotenv(Path(__file__).parent / ".env")
+# load .env — using Path resolution so it works no matter where you run from
+_env_file = Path(__file__).parent / ".env"
+if _env_file.exists():
+    load_dotenv(_env_file)
+    print(f"[config] loaded .env from {_env_file}")
+else:
+    print(f"[config] ⚠️  .env file NOT FOUND at {_env_file}")
+    print(f"[config]    cwd={Path.cwd()}, __file__={__file__}")
 
 # check if the API key was loaded (saves us from debugging later lol)
 _api_key = os.getenv("OPENAI_API_KEY")
