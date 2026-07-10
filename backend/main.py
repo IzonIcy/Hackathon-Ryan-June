@@ -10,11 +10,23 @@ or like: python -m uvicorn main:app --reload (idk either works lol)
 
 from dotenv import load_dotenv
 from pathlib import Path
+import os
 
 print("FabOps Sentinel booting up...")
 
 # TODO: fix this lol - load the .env file so OPENAI_API_KEY is available everywhere
 load_dotenv(Path(__file__).parent / ".env")
+
+# check if the API key was loaded (saves us from debugging later lol)
+_api_key = os.getenv("OPENAI_API_KEY")
+if _api_key:
+    print(f"[config] OPENAI_API_KEY loaded: {_api_key[:15]}...")
+else:
+    print("[config] ⚠️  WARNING: OPENAI_API_KEY not found in .env!")
+print(
+    f"[config] OPENAI_BASE_URL = {os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')}"
+)
+print(f"[config] OPENAI_MODEL = {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')}")
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI

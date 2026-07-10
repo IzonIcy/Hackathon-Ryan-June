@@ -60,13 +60,21 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
   const snap = useCallback(() => {
     const v = videoRef.current
     const c = canvasRef.current
-    if (!v || !c || !v.videoWidth) return
+    if (!v || !c) return
+    if (!v.videoWidth) {
+      setLastResult({ status: "error", observation: "Camera not ready yet. Wait for the video feed to load." })
+      return
+    }
+    if (!jobId) {
+      setLastResult({ status: "error", observation: "No active job. Click 'Watch It' first." })
+      return
+    }
     c.width = v.videoWidth
     c.height = v.videoHeight
     c.getContext("2d")?.drawImage(v, 0, 0)
     const b64 = c.toDataURL("image/jpeg", 0.7).split(",")[1]
     setAnalyzing(true)
-    analyzeFrame({ job_id: jobId!, image: b64 })
+    analyzeFrame({ job_id: jobId, image: b64 })
       .then(f => { if (f.observation) setLastResult({ status: f.status, observation: f.observation }) })
       .catch((err) => { setLastResult({ status: "error", observation: err.message || "analysis failed" }) })
       .finally(() => setAnalyzing(false))
