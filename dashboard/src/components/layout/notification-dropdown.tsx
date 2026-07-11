@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
 import { Bell, AlertTriangle, Info, AlertCircle, X } from "lucide-react"
 import * as api from "@/lib/api"
 import type { JobReport } from "@/types"
@@ -95,8 +96,16 @@ export function NotificationDropdown() {
         )}
       </button>
 
-      {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-2xl border border-card-border bg-card shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            style={{ transformOrigin: "top right" }}
+            className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-2xl border border-card-border bg-card shadow-2xl backdrop-blur-xl"
+          >
           <div className="flex items-center justify-between border-b border-card-border px-4 py-3">
             <h3 className="text-sm font-semibold text-foreground">Alerts</h3>
             {notifications.length > 0 && (
@@ -168,8 +177,9 @@ export function NotificationDropdown() {
               see all drama
             </Link>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

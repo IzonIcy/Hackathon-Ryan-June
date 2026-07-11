@@ -1,22 +1,37 @@
 "use client"
 
+import { usePathname } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 import { ArrowUpFromLine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { getRouteTitle } from "@/lib/nav"
 import { NotificationDropdown } from "./notification-dropdown"
 
 interface HeaderProps {
-  title: string
+  title?: string
 }
 
 // the top bar with the page title and stuff
-// lowkey just here to look cool
 export function Header({ title }: HeaderProps) {
-  console.log('header rendered lowkey')
+  const pathname = usePathname()
+  const resolvedTitle = title ?? getRouteTitle(pathname)
+
   return (
     <header className="fixed right-0 left-60 top-0 z-40 flex h-16 items-center justify-between border-b border-card-border bg-background/80 px-6 backdrop-blur-xl">
-      <div>
-        <h1 className="text-sm font-semibold text-foreground">{title}</h1>
+      <div className="overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.h1
+            key={resolvedTitle}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            className="text-sm font-semibold text-foreground"
+          >
+            {resolvedTitle}
+          </motion.h1>
+        </AnimatePresence>
       </div>
 
       <div className="flex items-center gap-3">
