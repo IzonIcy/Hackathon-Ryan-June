@@ -11,6 +11,7 @@ or like: python -m uvicorn main:app --reload (idk either works lol)
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import uvicorn
 
 print("FabOps Sentinel booting up...")
 
@@ -86,3 +87,12 @@ def health_check():
 def root():
     """home page idk why anyone would go here but whatev"""
     return {"message": "FabOps Sentinel API is running! 🎉"}
+
+
+def main():
+    """start the API server when running this file directly"""
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
+
+
+if __name__ == "__main__":
+    main()
