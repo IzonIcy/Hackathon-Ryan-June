@@ -15,8 +15,17 @@ import uvicorn
 
 print("FabOps Sentinel booting up...")
 
-# TODO: fix this lol - load the .env file so OPENAI_API_KEY is available everywhere
-load_dotenv(Path(__file__).parent / ".env")
+# load .env — using Path resolution so it works no matter where you run from
+_env_file = Path(__file__).parent / ".env"
+if _env_file.exists():
+    load_dotenv(_env_file)
+    print(f"[config] loaded .env from {_env_file}")
+else:
+    print(f"[config] ⚠️  .env file NOT FOUND at {_env_file}")
+    print(f"[config]    Copy .env.example to .env and add your keys:")
+    print(f"[config]    On Mac/Linux:  cp {_env_file}.example {_env_file}")
+    print(f"[config]    On Windows:    copy {_env_file}.example {_env_file}")
+    print(f"[config]    cwd={Path.cwd()}, __file__={__file__}")
 
 # check if the API key was loaded (saves us from debugging later lol)
 _api_key = os.getenv("OPENAI_API_KEY")
@@ -81,6 +90,25 @@ app.include_router(seed.router)
 def health_check():
     """just checks the server is alive (hopefully lol)"""
     return {"status": "ok", "service": "FabOps Sentinel"}
+
+
+@app.get("/api/debug/env")
+def debug_env():
+    """check environment config without exposing secrets (for debugging)"""
+    import services.vision as vision
+
+    key_status = "set" if vision.API_KEY else "not set"
+    env_key_status = "set" if os.environ.get("OPENAI_API_KEY") else "not set"
+    return {
+        "vision_module_api_key": key_status,
+        "os_environ_api_key": env_key_status,
+        "env_file_exists": Path(__file__).parent.joinpath(".env").exists(),
+        "env_file_path": str(Path(__file__).parent / ".env"),
+        "base_url": vision.API_BASE_URL,
+        "model": vision.MODEL,
+        "reference_images": f"{len(vision.REF_GOOD)} good, {len(vision.REF_DEFECT)} defect",
+        "note": "Go to http://localhost:8000/api/debug/env in your browser to check",
+    }
 
 
 @app.get("/")

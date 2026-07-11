@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
+import { MotionProvider } from "@/components/providers/motion-provider"
 import "./globals.css"
 
 const inter = Inter({
@@ -31,17 +32,19 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
       >
-        <div className="flex min-h-screen">
-          {/* sidebar left */}
-          <Sidebar />
-          <div className="flex flex-1 flex-col pl-60">
-            {/* header + main content area */}
-            <Header title="Dashboard" />
-            <main className="flex-1 overflow-y-auto p-6 pt-20">
-              {children}
-            </main>
+        <MotionProvider>
+          <div className="flex min-h-screen">
+            {/* sidebar left */}
+            <Sidebar />
+            <div className="flex flex-1 flex-col pl-60">
+              {/* header + main content area */}
+              <Header />
+              <main className="flex-1 overflow-y-auto p-6 pt-20">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </MotionProvider>
       </body>
     </html>
   )

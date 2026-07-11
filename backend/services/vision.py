@@ -12,9 +12,25 @@ import os
 import json
 import base64
 from pathlib import Path
+from dotenv import load_dotenv
 from httpx import AsyncClient
 
+# ---- Load .env as fallback (belt AND suspenders) ----
+# main.py also loads .env, but this ensures vision.py always finds the key
+# even when run in weird contexts or hot-reload edge cases.
+_env_path = Path(__file__).parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(_env_path)
+    print(f"[vision] loaded .env from {_env_path}")
+else:
+    print(f"[vision] ⚠️  .env NOT FOUND at {_env_path}")
+
 API_KEY = os.getenv("OPENAI_API_KEY")
+if API_KEY:
+    print(f"[vision] OPENAI_API_KEY found: {API_KEY[:15]}...")
+else:
+    print("[vision] ⚠️  OPENAI_API_KEY is NOT SET — AI analysis will fail!")
+
 API_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 API_URL = API_BASE_URL + "/chat/completions"
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -83,14 +99,25 @@ async def analyze_image(machine_type, image_base64, api_key=None):
     sends the image to gpt-4 and gets back what it thinks (fingers crossed it works lol)
     lowkey gpt-4o-mini is goated for this kinda stuff
     """
+    # Try to find the key in order: passed arg > module-level var > os.environ
+    # This handles the case where .env wasn't loaded at module-import time
+    # (e.g., friend just cloned the repo and hasn't created .env yet)
     key = api_key or API_KEY
+    if not key:
+        key = os.environ.get("OPENAI_API_KEY")
+    if not key:
+        # One more try: maybe .env exists but didn't load. Try loading it now.
+        _try_load = Path(__file__).parent.parent / ".env"
+        if _try_load.exists():
+            load_dotenv(_try_load)
+            key = os.environ.get("OPENAI_API_KEY")
     if not key:
         return {
             "status": "unknown",
             "confidence": 0.0,
-            "observation": "No API key set. Set the OPENAI_API_KEY env variable.",
-            "probable_cause": None,
-            "recommended_action": "Set up your OpenAI API key and restart.",
+            "observation": "No API key found. Copy backend/.env.example to backend/.env and fill in your OPENAI_API_KEY.",
+            "probable_cause": "OPENAI_API_KEY environment variable is missing or empty",
+            "recommended_action": "Run 'cp .env.example .env' (Mac/Linux) or 'copy .env.example .env' (Windows) in the backend/ folder, then edit .env with your API key. Then restart the server.",
             "severity": "low",
         }
 
@@ -127,7 +154,7 @@ Severity can be: low, medium, high
                     },
                 }
             )
-            
+
     if REF_DEFECT:
         content.append(
             {"type": "text", "text": "Reference images of DEFECTS (spaghetti/error):"}

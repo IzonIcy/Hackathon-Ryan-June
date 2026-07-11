@@ -46,6 +46,10 @@
   --radius-xl: 18px;
   --radius-2xl: 24px;
 
+  /* Snappier default for every bare transition-* utility in the app */
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
@@ -226,4 +230,14 @@ body {
   );
   background-size: 200% 100%;
   animation: shimmer 2.5s infinite;
+}
+
+/* ─── Reduced Motion ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
