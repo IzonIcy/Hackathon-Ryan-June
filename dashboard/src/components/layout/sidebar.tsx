@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { motion } from "framer-motion"
 import {
   LayoutDashboard,
   Cpu,
@@ -10,21 +11,22 @@ import {
   Radar,
   Activity,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { navItems as navRoutes } from "@/lib/nav"
 
-// where u tryna go??
-const navItems = [
-  // home page duh
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  // see all ur machines here
-  { href: "/machines", label: "Monitors", icon: Cpu },
-  // analytics for the business guys
-  { href: "/analytics", label: "Analytics", icon: Activity },
-  // where the drama goes
-  { href: "/incidents", label: "Incidents", icon: AlertTriangle },
-  // boring reports nobody reads
-  { href: "/reports", label: "Reports", icon: FileText },
-]
+const navIcons: Record<string, LucideIcon> = {
+  "/": LayoutDashboard,
+  "/machines": Cpu,
+  "/analytics": Activity,
+  "/incidents": AlertTriangle,
+  "/reports": FileText,
+}
+
+const navItems = navRoutes.map((item) => ({
+  ...item,
+  icon: navIcons[item.href] ?? LayoutDashboard,
+}))
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -59,16 +61,23 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200",
                 isActive
-                  ? "bg-primary-muted text-primary"
+                  ? "text-primary"
                   : "text-sidebar-text hover:bg-white/[0.04] hover:text-sidebar-text-active",
               )}
             >
-              <item.icon className="size-4 shrink-0" />
-              {item.label}
               {isActive && (
-                <span className="ml-auto size-1.5 rounded-full bg-primary" />
+                <motion.span
+                  layoutId="sidebar-active-pill"
+                  className="absolute inset-0 rounded-lg bg-primary-muted"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
+              <item.icon className="relative z-10 size-4 shrink-0" />
+              <span className="relative z-10">{item.label}</span>
+              {isActive && (
+                <span className="relative z-10 ml-auto size-1.5 rounded-full bg-primary" />
               )}
             </Link>
           )
