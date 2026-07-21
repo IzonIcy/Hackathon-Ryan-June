@@ -51,7 +51,7 @@ if ref_dir.exists():
                 REF_DEFECT.append(data)
             else:
                 REF_GOOD.append(data)
-        except:
+        except Exception:
             pass
     print(
         f"[vision] loaded {len(REF_GOOD)} good + {len(REF_DEFECT)} defect reference images (we got refs fr fr)"

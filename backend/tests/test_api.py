@@ -5,8 +5,6 @@ now with cameras instead of seed machines!
 todo: add more tests when we have time (we wont lol)
 """
 
-import os
-import pytest
 from fastapi.testclient import TestClient
 from database.db import DB_PATH, init_db, seed_data
 

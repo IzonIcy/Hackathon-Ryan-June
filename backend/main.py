@@ -8,10 +8,15 @@ to run: uvicorn main:app --reload
 or like: python -m uvicorn main:app --reload (idk either works lol)
 """
 
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from pathlib import Path
 import os
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from database.db import init_db
+from routers import machines, jobs, frames, reports, sessions, seed
 
 print("FabOps Sentinel booting up...")
 
@@ -22,7 +27,7 @@ if _env_file.exists():
     print(f"[config] loaded .env from {_env_file}")
 else:
     print(f"[config] ⚠️  .env file NOT FOUND at {_env_file}")
-    print(f"[config]    Copy .env.example to .env and add your keys:")
+    print("[config]    Copy .env.example to .env and add your keys:")
     print(f"[config]    On Mac/Linux:  cp {_env_file}.example {_env_file}")
     print(f"[config]    On Windows:    copy {_env_file}.example {_env_file}")
     print(f"[config]    cwd={Path.cwd()}, __file__={__file__}")
@@ -37,12 +42,6 @@ print(
     f"[config] OPENAI_BASE_URL = {os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')}"
 )
 print(f"[config] OPENAI_MODEL = {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')}")
-
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from database.db import init_db
-from routers import machines, jobs, frames, reports, sessions, seed
 
 
 @asynccontextmanager
