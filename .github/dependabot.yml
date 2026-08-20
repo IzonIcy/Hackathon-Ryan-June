@@ -1,18 +1,25 @@
 version: 2
 updates:
   - package-ecosystem: pip
-    directory: /backend
+    directory: "/backend"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
 
   - package-ecosystem: npm
-    directory: /frontend
+    directory: "/frontend"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: "/dashboard"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
 
   - package-ecosystem: github-actions
-    directory: /
+    directory: "/"
     schedule:
       interval: weekly
+    open-pull-requests-limit: 5
