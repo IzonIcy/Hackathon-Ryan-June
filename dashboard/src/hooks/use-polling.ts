@@ -6,7 +6,10 @@ import { useEffect, useRef } from 'react'
 // every 5 secs we ask the server "what's up" lol
 export function usePolling(callback: () => void, intervalMs: number = 5000) {
   const saved = useRef(callback)
-  saved.current = callback
+
+  useEffect(() => {
+    saved.current = callback
+  }, [callback])
 
   // TODO: fix this lol - sometimes it fires twice
   useEffect(() => {

@@ -39,10 +39,10 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
         if (dead) { stream.getTracks().forEach(t => t.stop()); return }
         streamRef.current = stream
         if (videoRef.current) videoRef.current.srcObject = stream
-      } catch (err: any) {
+      } catch (err) {
         if (dead) return
         console.log('bruh the camera died', err)
-        setError(err.message || "camera failed")
+        setError(err instanceof Error ? err.message : "camera failed")
       } finally {
         if (!dead) setLoading(false)
       }
@@ -87,6 +87,8 @@ export function CameraLiveFeed({ deviceId, jobId, onStartMonitoring, onStopMonit
       if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
       return
     }
+    // grab a frame immediately when monitoring starts, then on the interval
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     snap()
     if (intervalMs > 0) {
       intervalRef.current = setInterval(snap, intervalMs)

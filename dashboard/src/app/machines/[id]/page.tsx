@@ -154,17 +154,22 @@ export default function MachineDetailPage() {
   }
 
   const activeJobRef = useRef<Job | null>(null)
-  activeJobRef.current = activeJob
+  useEffect(() => {
+    activeJobRef.current = activeJob
+  }, [activeJob])
 
   // auto-start monitoring when watching a camera
   useEffect(() => {
     if (loading || !machine || hasAutoStarted) return
 
     if (activeJob) {
+      // sync local UI state from the fetched job once data lands
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsMonitoring(true)
       setActiveJobId(activeJob.id)
       setHasAutoStarted(true)
     } else {
+       
       setHasAutoStarted(true)
       handleStartMonitoring()
     }

@@ -55,8 +55,8 @@ export default function MachinesPage() {
     try {
       // first check if we already have permission (without being creepy)
       // by trying to enumerate without asking first
-      let devices = await navigator.mediaDevices.enumerateDevices()
-      let videoDevices = devices.filter((d) => d.kind === "videoinput")
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const videoDevices = devices.filter((d) => d.kind === "videoinput")
       const hasLabels = videoDevices.some((d) => d.label)
 
       // if no labels, we need permission first 🙄

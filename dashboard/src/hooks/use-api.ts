@@ -30,7 +30,10 @@ export function useApi<T>(
 
   useEffect(() => {
     mountedRef.current = true
+    // reset request state synchronously when deps change (standard fetch pattern)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
+     
     setError(null)
 
     const abort = new AbortController()
