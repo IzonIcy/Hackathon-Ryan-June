@@ -1,10 +1,51 @@
 """sends texts when the ai sees something bad (scaring the user lol)"""
 
 import os
+import time
 from twilio.rest import Client
 
 # just make the client once at startup (twilio is lowkey confusing ngl)
 _sms_client = None
+
+# Alert cooldown: don't blow up someone's phone when every frame of a
+# failing print triggers an alert. Keyed by (job_id, status).
+_last_alert_at: dict[tuple[int, str], float] = {}
+
+DEFAULT_COOLDOWN_SECONDS = 600
+
+
+def _cooldown_seconds() -> int:
+    raw = os.getenv("ALERT_COOLDOWN_SECONDS")
+    try:
+        value = int(raw) if raw is not None else DEFAULT_COOLDOWN_SECONDS
+    except ValueError:
+        value = DEFAULT_COOLDOWN_SECONDS
+    return max(0, value)
+
+
+def should_send_alert(job_id: int, status: str) -> bool:
+    """True when this (job, status) hasn't alerted within the cooldown.
+
+    "stop" severity always alerts — a crashed print is worth repeat texts.
+    """
+    if status == "stop":
+        return True
+
+    now = time.monotonic()
+    last = _last_alert_at.get((job_id, status))
+    if last is not None and (now - last) < _cooldown_seconds():
+        return False
+    return True
+
+
+def mark_alert_sent(job_id: int, status: str) -> None:
+    """Record that an alert fired so the cooldown window starts."""
+    _last_alert_at[(job_id, status)] = time.monotonic()
+
+
+def reset_alert_cooldowns() -> None:
+    """Clear cooldown state (used by tests)."""
+    _last_alert_at.clear()
 
 
 def _get_sms_client():
