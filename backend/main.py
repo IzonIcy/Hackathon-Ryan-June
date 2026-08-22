@@ -33,9 +33,10 @@ else:
     print(f"[config]    cwd={Path.cwd()}, __file__={__file__}")
 
 # check if the API key was loaded (saves us from debugging later lol)
+# NOTE: never print key material here — boot logs get pasted into bug reports
 _api_key = os.getenv("OPENAI_API_KEY")
 if _api_key:
-    print(f"[config] OPENAI_API_KEY loaded: {_api_key[:15]}...")
+    print("[config] OPENAI_API_KEY loaded ✓")
 else:
     print("[config] ⚠️  WARNING: OPENAI_API_KEY not found in .env!")
 print(
@@ -72,9 +73,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# maybe we need a healthcheck router too idk
-# app.include_router(health_check_router)  # TODO: fix this lol
 
 # connect all the route files (lowkey there's alot of them)
 app.include_router(machines.router)

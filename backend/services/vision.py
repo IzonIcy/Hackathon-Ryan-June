@@ -51,8 +51,8 @@ if ref_dir.exists():
                 REF_DEFECT.append(data)
             else:
                 REF_GOOD.append(data)
-        except Exception:
-            pass
+        except OSError as e:
+            print(f"[vision] ⚠️  skipping unreadable reference image {f.name}: {e}")
     print(
         f"[vision] loaded {len(REF_GOOD)} good + {len(REF_DEFECT)} defect reference images (we got refs fr fr)"
     )
@@ -140,7 +140,8 @@ Severity can be: low, medium, high
 """
 
     # build the message with reference images if we have them
-    content = [{"type": "text", "text": system_prompt}]
+    # (values are str OR nested dicts for image parts, hence the object value type)
+    content: list[dict[str, object]] = [{"type": "text", "text": system_prompt}]
 
     if REF_GOOD:
         content.append({"type": "text", "text": "Reference images of GOOD prints:"})
@@ -200,19 +201,19 @@ Severity can be: low, medium, high
             )
             response.raise_for_status()
             data = response.json()
-            content = data["choices"][0]["message"]["content"]
+            raw_content = data["choices"][0]["message"]["content"]
 
             try:
-                result = json.loads(content)
+                result = json.loads(raw_content)
             except json.JSONDecodeError:
-                if "```" in content:
-                    parts = content.split("```")
+                if "```" in raw_content:
+                    parts = raw_content.split("```")
                     json_part = parts[1]
                     if json_part.startswith("json"):
                         json_part = json_part[4:]
                     result = json.loads(json_part)
                 else:
-                    print("couldnt parse ai response:", content)
+                    print("couldnt parse ai response:", raw_content)
                     raise
 
             return {
