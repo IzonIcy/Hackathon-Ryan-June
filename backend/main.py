@@ -15,6 +15,7 @@ import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from auth import BearerTokenMiddleware, get_api_token
 from database.db import init_db
 from routers import machines, jobs, frames, reports, sessions, seed
 
@@ -63,6 +64,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Bearer-token auth on every /api route. With FABOPS_API_TOKEN set, all
+# non-public routes require the token; without it, only loopback clients
+# are served so an accidentally exposed port isn't an open API.
+app.add_middleware(BearerTokenMiddleware)
+
+if get_api_token():
+    print("[config] FABOPS_API_TOKEN set — bearer auth enforced on /api routes")
+else:
+    print("[config] ⚠️  FABOPS_API_TOKEN NOT set — API is open to local clients only.")
+    print("[config]    Non-local clients will be rejected until you set a token.")
+
 # this took me forever to figure out omg
 # lets the frontend (localhost:5173) talk to the backend
 # without getting CORS errors (that was so annoying to figure out fr fr)
@@ -92,6 +104,11 @@ def health_check():
 @app.get("/api/debug/env")
 def debug_env():
     """check environment config without exposing secrets (for debugging)"""
+    # Debug endpoints leak config metadata (base URL, model, filesystem
+    # paths). Disabled unless FABOPS_DEBUG=1 so it can't ship accidentally.
+    if os.getenv("FABOPS_DEBUG", "").strip().lower() not in {"1", "true", "yes"}:
+        return {"error": "debug endpoint disabled; set FABOPS_DEBUG=1 to enable"}
+
     import services.vision as vision
 
     key_status = "set" if vision.API_KEY else "not set"

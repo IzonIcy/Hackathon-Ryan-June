@@ -63,6 +63,16 @@ uvicorn main:app --reload
 The API runs at `http://localhost:8000`.  
 Swagger docs at `http://localhost:8000/docs`.
 
+**Auth:** every `/api` route (except `/api/health`) requires a bearer token once `FABOPS_API_TOKEN` is set in `backend/.env`:
+
+```bash
+FABOPS_API_TOKEN=whatever-long-random-string
+```
+
+Requests then need the header: `Authorization: Bearer <your-token>`.
+
+Without a token configured, the API only serves loopback (`localhost`) clients — non-local clients get a `503`, so an accidentally exposed port is not an open API. `/api/debug/*` routes are disabled unless `FABOPS_DEBUG=1`.
+
 ### 4. Start the Dashboard
 
 ```bash
