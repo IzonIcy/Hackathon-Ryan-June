@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from auth import BearerTokenMiddleware, get_api_token
 from database.db import init_db
+from rate_limit import PaidEndpointRateLimitMiddleware
 from routers import machines, jobs, frames, reports, sessions, seed
 
 print("FabOps Sentinel booting up...")
@@ -68,6 +69,11 @@ app = FastAPI(
 # non-public routes require the token; without it, only loopback clients
 # are served so an accidentally exposed port isn't an open API.
 app.add_middleware(BearerTokenMiddleware)
+
+# Frame analysis forwards images to a paid vision API on every call. Cap it
+# per client (default 10/min, ANALYZE_RATE_LIMIT_PER_MINUTE to change or 0
+# to disable) so a runaway frontend loop doesn't become an API bill.
+app.add_middleware(PaidEndpointRateLimitMiddleware)
 
 if get_api_token():
     print("[config] FABOPS_API_TOKEN set — bearer auth enforced on /api routes")
