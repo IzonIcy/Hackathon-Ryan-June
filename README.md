@@ -1,79 +1,52 @@
 # FabOps Sentinel
 
-> AI-powered surveillance for 3D printers, laser cutters, and CNC machines.
-> Watches your live camera feed, detects print failures (spaghetti, warping, etc.), and sends SMS alerts — in real time.
+FabOps Sentinel watches a webcam pointed at your 3D printer, laser cutter, or CNC machine, sends captured frames to an AI vision model, and texts you when it spots something wrong. A Next.js dashboard shows live status, analytics, incidents, and reports.
 
-## How It Works
+## How it works
 
-1. **Camera captures** a live feed of your machine
-2. **AI (vision model)** analyzes each frame against reference images of known defects
-3. **Alerts** fire via SMS (Twilio) when something goes wrong
-4. **Dashboard** shows real-time status, historical reports, and incident logs
+A camera watches the machine. When you start monitoring a job from the dashboard, it captures a frame every few seconds and posts each one to the backend's `/api/frames/analyze` endpoint. The backend sends the frame along with your reference images of good and failed prints to an OpenAI-compatible vision API, stores the verdict, and fires a Twilio SMS if the result is a warning or stop condition. The dashboard polls the API for results so live status, incidents, and reports stay current. You can also trigger an analysis manually at any point with the "Analyze Now" button.
 
----
-
-## Quick Start
+## Quick start
 
 ### Prerequisites
 
-- Python 3.12+
-- Node.js 20+
-- A webcam (built-in or USB) pointed at your machine
-- An OpenAI-compatible API key (e.g., [EAON](https://eaon.dev), OpenAI, Groq, etc.)
+- Python 3.12+ and Node.js 20+
+- A webcam (built-in or USB) pointed at the machine
+- An API key for an OpenAI-compatible vision provider (e.g., [EAON](https://eaon.dev), OpenAI, Groq)
 
-### 1. Clone & Set Up the Backend
+### Backend
 
 ```bash
-# Clone the repo
 git clone <repo-url>
-cd Hackathon-Ryan-June
-
-# Set up Python backend
-cd backend
+cd Hackathon-Ryan-June/backend
 python3 -m venv venv
 source venv/bin/activate   # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# IMPORTANT: Create your .env file from the template
-# Mac / Linux:
-cp .env.example .env
-# Windows:
-copy .env.example .env
-# Then edit .env and put in your API key
+cp .env.example .env       # On Windows: copy .env.example .env
 ```
 
-### 2. Configure `.env`
+Edit `.env` (it is git-ignored; `.env.example` is the template, never commit real keys):
 
 | Variable | Required | Description |
 |---|---|---|
-| `OPENAI_API_KEY` | ✅ | Your API key (OpenAI, EAON, Groq, etc.) |
-| `OPENAI_BASE_URL` | ✅ | API endpoint (e.g., `https://api.eaon.dev/v1`) |
-| `OPENAI_MODEL` | ✅ | Model name (e.g., `gemini-3.1-flash-lite`, `gpt-4o-mini`) |
-| `TWILIO_*` | ❌ | Optional — for SMS alerts |
+| `OPENAI_API_KEY` | yes | Key for your vision API provider |
+| `OPENAI_BASE_URL` | yes | Provider endpoint, e.g. `https://api.eaon.dev/v1` |
+| `OPENAI_MODEL` | yes | Model name, e.g. `gemini-3.1-flash-lite` or `gpt-4o-mini` |
+| `FABOPS_API_TOKEN` | recommended | Any long random string. Enables bearer auth on all `/api` routes |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PHONE_NUMBER`, `ALERT_PHONE_NUMBER` | no | Twilio SMS alerts |
 
-**Your `.env` file is git-ignored** — use `.env.example` as a template. Never commit real API keys.
-
-### 3. Start the Backend Server
+Start the server:
 
 ```bash
-cd backend
 uvicorn main:app --reload
 ```
 
-The API runs at `http://localhost:8000`.  
-Swagger docs at `http://localhost:8000/docs`.
+The API runs at `http://localhost:8000`, Swagger docs at `http://localhost:8000/docs`.
 
-**Auth:** every `/api` route (except `/api/health`) requires a bearer token once `FABOPS_API_TOKEN` is set in `backend/.env`:
+A note on security: with `FABOPS_API_TOKEN` set, every `/api` route requires an `Authorization: Bearer <your-token>` header (`/api/health` excepted). Without a token configured, the API only serves loopback clients and rejects everything else with a `503`, so an accidentally exposed port is not an open API. The `/api/debug/*` routes stay disabled unless you set `FABOPS_DEBUG=1`. Frame analysis is rate limited per client at 10 requests per minute by default, tunable with `ANALYZE_RATE_LIMIT_PER_MINUTE`.
 
-```bash
-FABOPS_API_TOKEN=whatever-long-random-string
-```
-
-Requests then need the header: `Authorization: Bearer <your-token>`.
-
-Without a token configured, the API only serves loopback (`localhost`) clients — non-local clients get a `503`, so an accidentally exposed port is not an open API. `/api/debug/*` routes are disabled unless `FABOPS_DEBUG=1`.
-
-### 4. Start the Dashboard
+### Dashboard
 
 ```bash
 cd dashboard
@@ -81,55 +54,53 @@ npm install
 npm run dev
 ```
 
-The dashboard runs at `http://localhost:5173` (or `http://localhost:3000`).
+Open `http://localhost:3000`. Add a machine (3D printer, laser cutter, CNC, or generic camera), click "Watch It" to start a monitoring session, and point the webcam at the machine. Frames get analyzed automatically while the session is active, or click "Analyze Now" for a manual check.
 
-### 5. Use It
+### Alternate frontend
 
-1. Open the dashboard in your browser
-2. **Add a machine** (3D printer, laser cutter, CNC, or generic camera)
-3. **Click "Watch It"** — this creates a monitoring session
-4. Point your webcam at the machine
-5. The AI will automatically analyze frames and flag defects
-6. Click **"Analyze Now"** to manually trigger an analysis
+There is also a smaller React Router app under `frontend/` that proxies `/api` calls to the backend:
 
----
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Project Structure
+It serves `http://localhost:5173`.
+
+## Project structure
 
 ```
 backend/                        # Python FastAPI backend
 ├── main.py                     # Server entry point, routes, CORS
+├── auth.py                     # Bearer token middleware
+├── rate_limit.py               # Per-client rate limiting for paid AI endpoints
 ├── .env.example                # Template for environment variables
 ├── database/
 │   ├── db.py                   # SQLite connection & init
 │   └── schema.sql              # Table definitions
 ├── models/
-│   └── schemas.py              # Pydantic models (request/response)
+│   └── schemas.py              # Pydantic request/response models
 ├── routers/
-│   ├── frames.py               # Frame analysis endpoint (POST /api/frames/analyze)
+│   ├── frames.py               # Frame analysis (sync and async)
 │   ├── jobs.py                 # Job management
 │   ├── machines.py             # Machine CRUD
 │   ├── reports.py              # Report generation
-│   ├── seed.py                 # Test data seeding
+│   ├── seed.py                 # Demo data seeding/clearing
 │   └── sessions.py             # Start/stop monitoring sessions
 ├── services/
-│   ├── vision.py               # AI image analysis (calls the vision API)
-│   └── notifications.py        # Twilio SMS alerts
-├── reference_images/           # Reference images for AI defect detection
+│   ├── vision.py               # Calls the vision API
+│   ├── notifications.py        # Twilio SMS alerts
+│   └── reporting.py            # Report building
+├── reference_images/           # Reference images for defect detection
 ├── requirements.txt
-└── tests/
-    └── test_api.py             # API integration tests
+└── tests/                      # pytest suite
 
 dashboard/                      # Next.js frontend
 ├── src/
-│   ├── app/
-│   │   ├── page.tsx            # Home / overview
-│   │   ├── analytics/
-│   │   ├── incidents/
-│   │   ├── machines/
-│   │   └── reports/
+│   ├── app/                    # Home, analytics, incidents, machines, reports
 │   ├── components/
-│   │   ├── camera/             # Live camera feed & capture
+│   │   ├── camera/             # Live camera feed, capture, "Watch It"/"Analyze Now"
 │   │   ├── dashboard/          # Widgets, charts, cards
 │   │   ├── layout/             # Sidebar, header, notifications
 │   │   └── ui/                 # Reusable shadcn-style components
@@ -138,11 +109,13 @@ dashboard/                      # Next.js frontend
 │   └── types/                  # TypeScript type definitions
 ├── package.json
 └── next.config.ts
+
+frontend/                       # Alternate Vite + React Router UI
+hardware/                       # Hardware configs
+database.db                     # SQLite database
 ```
 
----
-
-## API Endpoints
+## API endpoints
 
 | Method | Path | Description |
 |---|---|---|
@@ -156,87 +129,62 @@ dashboard/                      # Next.js frontend
 | `POST` | `/api/jobs` | Create a job |
 | `GET` | `/api/jobs/{id}` | Get job details |
 | `PATCH` | `/api/jobs/{id}/status` | Update job status |
-| `POST` | `/api/frames/analyze` | **Analyze a camera frame** (sends to AI) |
-| `GET` | `/api/frames/{job_id}` | Get frames for a job |
+| `POST` | `/api/frames/analyze` | Analyze a frame synchronously |
+| `POST` | `/api/frames/analyze/async` | Queue an analysis, returns `202` |
+| `GET` | `/api/frames/{job_id}` | List frames for a job |
+| `GET` | `/api/frames/analysis/{analysis_id}` | Poll an async analysis result |
 | `GET` | `/api/reports` | List reports |
 | `GET` | `/api/reports/{job_id}` | Get report for a job |
-| `POST` | `/api/sessions/start` | Start monitoring session |
-| `POST` | `/api/sessions/{job_id}/stop` | Stop monitoring session |
+| `POST` | `/api/sessions/start` | Start a monitoring session |
+| `POST` | `/api/sessions/{job_id}/stop` | Stop a monitoring session |
+| `POST` | `/api/seed/demo/{job_id}` | Fill a job with demo frames and incidents |
+| `POST` | `/api/seed/clear` | Wipe all frames, incidents, jobs, and machines |
 
----
+## Reference images
 
-## Reference Images
+The `backend/reference_images/` folder holds the sample images the model compares against:
 
-The `backend/reference_images/` folder contains sample images the AI uses as reference:
+- Files with `error` or `spagheti` in the name are defect references (spaghetti, warping, etc.)
+- Everything else counts as a good/normal print
 
-- Files with `error` or `spagheti` in the name → defect references (spaghetti, warping, etc.)
-- All other images → good/normal print references
+Adding more of your own real failure photos is the easiest way to improve detection.
 
-Add your own reference images to improve detection accuracy!
-
----
-
-## SMS Alerts (Optional)
-
-To enable SMS alerts via Twilio:
+## SMS alerts (optional)
 
 1. Sign up at [Twilio](https://console.twilio.com)
 2. Get your Account SID, API Key SID, and API Key Secret
-3. Add them to `.env` (see `.env.example` for the format)
-4. Set `TWILIO_PHONE_NUMBER` (your Twilio number) and `ALERT_PHONE_NUMBER` (your cell)
+3. Add them to `.env`, plus `TWILIO_PHONE_NUMBER` (your Twilio number) and `ALERT_PHONE_NUMBER` (your cell)
 
-When the AI detects a `warning` or `stop` condition, you'll get a text message.
+When a `warning` or `stop` condition comes back from an analysis, you get a text.
 
----
-
-## Running Tests
+## Running tests
 
 ```bash
-cd backend
-python -m pytest tests/ -v
+# Backend
+cd backend && python -m pytest tests/ -v
+
+# Alternate frontend
+cd frontend && npm test
 ```
 
----
+## Limitations
 
-## Troubleshooting
+- Hackathon project. Expect rough edges.
+- Detection quality depends entirely on the reference image set. Generic stock references catch obvious spaghetti but may miss subtler failures on your specific printer or material.
+- Analysis compares individual frames against references. There is no tracking of print state across frames.
+- Auth is a single shared bearer token and storage is SQLite. This is built for local and demo use, not exposure to the open internet.
+- The Next.js dashboard has no automated tests. The backend has a pytest suite and the Vite frontend has vitest coverage.
 
-### "No API key found" in the dashboard
-
-```
-Copy backend/.env.example to backend/.env and fill in your OPENAI_API_KEY
-```
-
-**Cause:** The `.env` file is missing or doesn't have `OPENAI_API_KEY` set.  
-**Fix:**
-```bash
-cd backend
-# Mac / Linux:
-cp .env.example .env
-# Windows:
-copy .env.example .env
-```
-
-Then edit `.env` and replace `sk-your-key-here` with your actual API key. Restart the server.
-
-### "AI analysis failed: 413 Payload Too Large"
-
-**Cause:** The reference images are too large for the API.  
-**Fix:** Reduce image sizes or use fewer reference images.
-
-### Camera not working
-
-- Make sure your browser has permission to access the camera
-- Try a different browser (Chrome works best)
-- Check that no other app is using the camera
-
----
-
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |---|---|
 | Backend | Python, FastAPI, SQLite, httpx |
-| Frontend | Next.js (App Router), React, TypeScript, Tailwind CSS |
+| Dashboard | Next.js (App Router), React, TypeScript, Tailwind CSS |
+| Alternate frontend | Vite, React Router |
 | AI | OpenAI-compatible vision API (EAON, OpenAI, Groq, etc.) |
 | Alerts | Twilio SMS |
-| Testing | pytest (backend) |
+
+## Credits
+
+Built by Ryan Bahadori with Shreeansh Bharadwaj and SansCreates.
