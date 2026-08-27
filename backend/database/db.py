@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from pathlib import Path
 
@@ -5,7 +6,11 @@ from pathlib import Path
 # it stores all the jobs and frames and stuff (ngl sqlite is like excel but for coders)
 # lowkey wierd how it just lives in a file but whatever
 
-DB_PATH = Path(__file__).parent.parent / "fabops.db"
+# Env override exists for docker-compose, which volume-mounts the data
+# directory; the default keeps everything next to the backend code.
+DB_PATH = Path(
+    os.environ.get("FABOPS_DB_PATH", Path(__file__).parent.parent / "fabops.db")
+)
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 
 

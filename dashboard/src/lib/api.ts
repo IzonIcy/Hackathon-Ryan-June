@@ -4,6 +4,16 @@ import type { Machine, Job, Frame, JobReport } from '@/types'
 
 const BASE = 'http://localhost:8000/api'
 
+// Set NEXT_PUBLIC_FABOPS_API_TOKEN when the backend runs with
+// FABOPS_API_TOKEN; without it every request would get a 401.
+const API_TOKEN = process.env.NEXT_PUBLIC_FABOPS_API_TOKEN as string | undefined
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = { ...extra }
+  if (API_TOKEN) headers.Authorization = `Bearer ${API_TOKEN}`
+  return headers
+}
+
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message)
@@ -13,7 +23,7 @@ class ApiError extends Error {
 
 // generic fetch wrapper lowkey
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { signal })
+  const res = await fetch(`${BASE}${path}`, { headers: authHeaders(), signal })
   if (!res.ok) throw new ApiError(res.status, await res.text())
   return res.json()
 }
@@ -22,7 +32,7 @@ async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
 async function post<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: authHeaders(body ? { 'Content-Type': 'application/json' } : undefined),
     body: body ? JSON.stringify(body) : undefined,
     signal,
   })
@@ -34,6 +44,7 @@ async function post<T>(path: string, body?: unknown, signal?: AbortSignal): Prom
 async function patch<T>(path: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'PATCH',
+    headers: authHeaders(),
     signal,
   })
   if (!res.ok) throw new ApiError(res.status, await res.text())
@@ -58,7 +69,7 @@ export function createMachine(data: { name: string; machine_type?: string; devic
 
 // deletes a machine (bye bye)
 export function deleteMachine(id: number, signal?: AbortSignal) {
-  return fetch(`${BASE}/machines/${id}`, { method: 'DELETE', signal }).then(r => {
+  return fetch(`${BASE}/machines/${id}`, { method: 'DELETE', headers: authHeaders(), signal }).then(r => {
     if (!r.ok) throw new ApiError(r.status, 'failed to delete (skill issue)')
     return r.json()
   })

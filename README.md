@@ -34,6 +34,8 @@ Edit `.env` (it is git-ignored; `.env.example` is the template, never commit rea
 | `OPENAI_BASE_URL` | yes | Provider endpoint, e.g. `https://api.eaon.dev/v1` |
 | `OPENAI_MODEL` | yes | Model name, e.g. `gemini-3.1-flash-lite` or `gpt-4o-mini` |
 | `FABOPS_API_TOKEN` | recommended | Any long random string. Enables bearer auth on all `/api` routes |
+| `VITE_FABOPS_API_TOKEN` | with token auth | Same value, exposed to the Vite frontend so its API client sends the bearer header |
+| `NEXT_PUBLIC_FABOPS_API_TOKEN` | with token auth | Same value for the Next.js dashboard's API client |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PHONE_NUMBER`, `ALERT_PHONE_NUMBER` | no | Twilio SMS alerts |
 
 Start the server:

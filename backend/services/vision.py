@@ -27,7 +27,7 @@ else:
 
 API_KEY = os.getenv("OPENAI_API_KEY")
 if API_KEY:
-    print(f"[vision] OPENAI_API_KEY found: {API_KEY[:15]}...")
+    print(f"[vision] OPENAI_API_KEY found ({len(API_KEY)} chars)")
 else:
     print("[vision] ⚠️  OPENAI_API_KEY is NOT SET — AI analysis will fail!")
 

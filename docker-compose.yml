@@ -18,6 +18,9 @@ services:
       #   python -c "import secrets; print(secrets.token_urlsafe(32))"
       - FABOPS_API_TOKEN=${FABOPS_API_TOKEN:-}
       - FABOPS_DEBUG=${FABOPS_DEBUG:-0}
+      # The volume below mounts a directory; point the DB into it so data
+      # actually survives container recreates.
+      - FABOPS_DB_PATH=/app/database/fabops.db
     volumes:
       - ./backend:/app
       # Keep the SQLite database across container recreates.
