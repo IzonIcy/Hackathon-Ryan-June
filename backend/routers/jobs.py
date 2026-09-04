@@ -8,7 +8,7 @@ router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 
 
 @router.get("")
-def list_jobs(status: str = None):
+def list_jobs(status: str | None = None):
     """get all jobs, or filter by status if you want (filtering is lowkey handy)"""
     conn = get_connection()
     if status:
