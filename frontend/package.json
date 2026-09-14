@@ -12,7 +12,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
+    "@types/react": "^19.3.0",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
     "esbuild": "^0.28.2",
@@ -26,7 +26,7 @@
     "esbuild": "$esbuild"
   },
   "dependencies": {
-    "react": "^19.2.8",
+    "react": "^19.3.0",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2"
   }
