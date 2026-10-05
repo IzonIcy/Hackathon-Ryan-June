@@ -1,7 +1,7 @@
 # Minimum versions the backend is verified against; upper bounds guard
 # against untested major releases. Pinned for reproducible builds.
 fastapi==0.115.4
-uvicorn==0.52.4
+uvicorn==0.54.0
 python-multipart==0.0.31
 httpx==0.28.1
 aiofiles==25.1.0
