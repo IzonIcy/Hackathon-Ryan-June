@@ -1,6 +1,6 @@
 # Minimum versions the backend is verified against; upper bounds guard
 # against untested major releases. Pinned for reproducible builds.
-fastapi==0.115.4
+fastapi==0.142.2
 uvicorn==0.52.4
 python-multipart==0.0.32
 httpx==0.28.1
