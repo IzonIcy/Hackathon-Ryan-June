@@ -2,7 +2,7 @@
 # against untested major releases. Pinned for reproducible builds.
 fastapi==0.162.0
 uvicorn==0.54.0
-python-multipart==0.0.32
+python-multipart==0.0.33
 httpx==0.28.1
 aiofiles==25.1.0
 python-dotenv==1.2.4
