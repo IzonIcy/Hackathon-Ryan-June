@@ -21,9 +21,12 @@ The stack needs a completed `backend/.env` before it starts. Copy the template f
 ```sh
 cp backend/.env.example backend/.env
 docker compose up --build
+docker compose exec ollama ollama pull llava
 ```
 
-Compose starts the backend on port 8000, the Vite frontend on 5173, and the dashboard on 3000. Twilio keys are optional; the SMS path turns itself off when they are absent.
+Compose starts the backend on port 8000, the Vite frontend on 5173, the dashboard on 3000, and Ollama on 11434. Twilio keys are optional; the SMS path turns itself off when they are absent.
+
+The backend talks to the `ollama` service over `OPENAI_BASE_URL=http://ollama:11434/v1`, which compose sets for you. The pull in the third line is the one manual step: the container has no model until you fetch one, and `llava` is the default name the backend asks for. `llama3.2-vision` and `qwen2.5vl` work too, but pull the same name you give `OPENAI_MODEL`.
 
 JavaScript commands in this file use bun. The repo's AGENTS.md and CI workflow still call npm, and both read the same `package.json` scripts.
 
