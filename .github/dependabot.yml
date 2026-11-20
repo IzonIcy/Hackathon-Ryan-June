@@ -26,6 +26,13 @@ updates:
     groups:
       dashboard:
         patterns: ["*"]
+    ignore:
+      # typescript-eslint, pulled in by eslint-config-next, refuses to load
+      # TypeScript 7. Remove this once
+      # https://github.com/typescript-eslint/typescript-eslint/issues/10940 closes.
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: github-actions
     directory: "/"
