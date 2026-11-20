@@ -1,5 +1,7 @@
 # FabOps Sentinel
 
+This repository is `IzonIcy/fabops-sentinel`. It was named `Hackathon-Ryan-June` until 20 November 2026, and GitHub redirects the old URL.
+
 FabOps Sentinel watches a 3D printer, laser cutter, or CNC machine through a webcam, sends every frame to a vision model, and texts you when a part goes wrong, for anyone running a print farm or a laser cutter who wants an alert instead of a babysitter.
 
 ```sh
