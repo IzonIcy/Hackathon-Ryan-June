@@ -45,14 +45,24 @@ option there.
    images in `backend/reference_images/`, and let one frame analyze so the card
    shows a real verdict rather than an empty state.
 
-5. Capture the window at 1440x900:
+5. Capture the page at 1440x600. Position the browser window at y=240 first so a
+   system dialog cannot land in frame, then capture the region below the browser
+   toolbar:
 
    ```sh
-   screencapture -x -o -l"$(peekaboo window list --app "Google Chrome" --json | jq -r '.data.windows[0].window_id')" docs/images/demo.png
+   screencapture -x -R 0,400,1440,600 docs/images/demo.png
    ```
 
-## Placeholder
+## What the repo carries now
 
-`docs/images/demo.png` is intentionally absent. The README refers to this file
-instead of embedding a screenshot that does not exist. Replace the reference
-once the steps above produce one.
+`docs/images/demo.png` is a real capture of the dashboard served by `next start`
+against a seeded demo session, cropped to the page so no browser chrome shows.
+The feed reads "everything fine" because the seeded frames were never analyzed:
+that needs a working vision endpoint. Re-run the steps above with a key to
+replace it with a shot that carries a real verdict.
+
+The capture command used:
+
+```sh
+screencapture -x -R 0,400,1440,600 docs/images/demo.png
+```

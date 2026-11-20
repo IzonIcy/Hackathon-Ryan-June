@@ -6,7 +6,9 @@ FabOps Sentinel watches a 3D printer, laser cutter, or CNC machine through a web
 docker compose up --build
 ```
 
-There is no screenshot in the repo yet. [docs/demo.md](docs/demo.md) has the steps to run the stack and capture the dashboard shot.
+![The dashboard after a monitoring session starts, showing one monitor named Deploy, seven active sessions, and a recent-activity feed](docs/images/demo.png)
+
+The capture above is the dashboard with a seeded demo session. The vision verdicts need an API key, so the feed reads "everything fine" rather than a real warning. [docs/demo.md](docs/demo.md) has the full steps, including the one frame analysis that fills the feed with a real verdict.
 
 ## How it works
 
