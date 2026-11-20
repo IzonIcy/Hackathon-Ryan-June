@@ -34,7 +34,7 @@ JavaScript commands in this file use bun. The repo's AGENTS.md and CI workflow s
 
 - Python 3.12+ for the backend, Node.js 20+ for the two JavaScript surfaces
 - A webcam (built-in or USB) pointed at the machine
-- An API key for an OpenAI-compatible vision provider (EAON, OpenAI, Groq)
+- An OpenAI-compatible vision endpoint: a hosted provider and its API key (EAON, OpenAI, Groq), or a local [Ollama](https://ollama.com) with a vision model pulled
 
 ### Backend
 
@@ -53,15 +53,33 @@ Edit `.env` (it is git-ignored; `.env.example` is the template, never commit rea
 
 | Variable | Required | Description |
 |---|---|---|
-| `OPENAI_API_KEY` | yes | Key for your vision API provider |
-| `OPENAI_BASE_URL` | yes | Provider endpoint, e.g. `https://api.eaon.dev/v1` |
-| `OPENAI_MODEL` | yes | Model name, e.g. `gemini-3.1-flash-lite` or `gpt-4o-mini` |
+| `OPENAI_BASE_URL` | yes | Provider endpoint, e.g. `https://api.eaon.dev/v1` or `http://localhost:11434/v1` |
+| `OPENAI_MODEL` | yes | Model name, e.g. `gpt-4o-mini`, `gemini-3.1-flash-lite`, or `llava` |
+| `OPENAI_API_KEY` | hosted only | Key for your vision provider. Not needed for a local endpoint |
 | `FABOPS_API_TOKEN` | recommended | Any long random string. Enables bearer auth on all `/api` routes |
 | `VITE_FABOPS_API_TOKEN` | with token auth | Same value, exposed to the Vite frontend so its API client sends the bearer header |
 | `NEXT_PUBLIC_FABOPS_API_TOKEN` | with token auth | Same value for the Next.js dashboard's API client |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PHONE_NUMBER`, `ALERT_PHONE_NUMBER` | no | Twilio SMS alerts |
 
 A note on security: with `FABOPS_API_TOKEN` set, every `/api` route requires an `Authorization: Bearer <your-token>` header (`/api/health` excepted). Without a token configured, the API only serves loopback clients and rejects everything else with a `503`, so an accidentally exposed port is not an open API. The `/api/debug/*` routes stay disabled unless you set `FABOPS_DEBUG=1`. Frame analysis is rate limited per client at 10 requests per minute by default, tunable with `ANALYZE_RATE_LIMIT_PER_MINUTE`.
+
+### Local vision
+
+The vision call is plain OpenAI chat completions, so any server that speaks that shape works, including Ollama. Ollama wants the same `image_url` parts with base64 data URLs that a hosted provider gets, so the only change is the endpoint and the model name.
+
+```sh
+ollama serve
+ollama pull llava          # or llama3.2-vision, qwen2.5vl
+```
+
+```sh
+# backend/.env
+OPENAI_BASE_URL=http://localhost:11434/v1
+OPENAI_MODEL=llava
+OPENAI_API_KEY=
+```
+
+A local endpoint needs no key. `services/vision.py` skips the key requirement when the endpoint is loopback, a private address, or a single-label hostname like the compose service, and the effective base URL, model, and key come from `resolve_vision_config` rather than from `getenv` sprinkled through the module. `docker compose up` already points the backend at its own `ollama` service, so a compose run needs only the pull. To confirm what the backend resolved, run it with `FABOPS_DEBUG=1` and open `GET /api/debug/env`.
 
 ### Dashboard
 
@@ -85,11 +103,20 @@ bun run dev
 
 It serves `http://localhost:5173`.
 
+## Privacy
+
+Where frames go depends on `OPENAI_BASE_URL`.
+
+- Local endpoint (loopback, a private address, or the compose `ollama` service): no frame leaves the machine or your own network. The live frame, the twelve reference images, and the prompt all go to the local model.
+- Hosted endpoint (OpenAI, EAON, Groq, anything on the internet): every frame leaves the machine. Each analysis uploads the live frame plus all twelve reference images to that provider. The capture loop runs every 3 seconds by default and `ANALYZE_RATE_LIMIT_PER_MINUTE` caps analysis at 10 per minute, so a monitored job can put up to 600 uploads an hour on the wire.
+
+Two things stay on local disk either way: `backend/.env` holds the key and is git-ignored, and `backend/captured_frames/` keeps the frames that triggered a warning or stop.
+
 ## What it does not do yet
 
 - It compares one frame at a time against reference images. Nothing tracks print state across frames, so a slow failure that looks fine in any single frame goes unseen.
 - Detection quality comes from the reference set in `backend/reference_images/`. The stock images catch obvious spaghetti and miss subtler failures on your specific printer or material.
-- Every analysis is a network call to a paid vision provider that needs `OPENAI_API_KEY`. Cost and latency scale with capture rate, and the default rate limit caps analysis at 10 requests per minute per client.
+- Every analysis is a network call to a vision provider. With a hosted one it is a paid call that needs `OPENAI_API_KEY`. With a local one there is no key and no fee, but the verdict is only as good as the model you pulled.
 - Auth is one shared bearer token and storage is SQLite. It is built for local and demo use, not for exposure to the open internet.
 - The Next.js dashboard has no automated tests. The backend has a pytest suite and the Vite frontend has vitest coverage.
 
@@ -177,6 +204,18 @@ The `backend/reference_images/` folder holds the sample images the model compare
 - Everything else counts as a good/normal print
 
 Adding more of your own real failure photos is the easiest way to improve detection.
+
+## Vision eval
+
+`backend/eval/labels.tsv` labels every frame in `backend/reference_images/` as `normal` or `defect`, and `scripts/eval_vision.py` scores the vision call against them, so a prompt edit or a model swap can be measured instead of guessed.
+
+```sh
+backend/.venv/bin/python scripts/eval_vision.py --check
+backend/.venv/bin/python scripts/eval_vision.py \
+  --base-url http://localhost:11434/v1 --model llava
+```
+
+The script prints one line per frame, a per-label split, and overall accuracy. With no endpoint answering it prints one line and exits 2. `backend/eval/RESULTS.md` records what has actually been measured.
 
 ## SMS alerts (optional)
 
