@@ -8,10 +8,15 @@ ngl this is the coolest part of the whole project fr fr
 TODO: add more reference images or something idk
 """
 
-import os
-import json
 import base64
+import ipaddress
+import json
+import os
+from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
+
 from dotenv import load_dotenv
 from httpx import AsyncClient
 
@@ -25,15 +30,105 @@ if _env_path.exists():
 else:
     print(f"[vision] ⚠️  .env NOT FOUND at {_env_path}")
 
-API_KEY = os.getenv("OPENAI_API_KEY")
+DEFAULT_BASE_URL = "https://api.openai.com/v1"
+DEFAULT_HOSTED_MODEL = "gpt-4o-mini"
+DEFAULT_LOCAL_MODEL = "llava"
+
+_LOOPBACK_NAMES = frozenset({"localhost", "localhost.localdomain", "ip6-localhost"})
+
+
+@dataclass(frozen=True)
+class VisionConfig:
+    """Resolved provider settings. vision.py, main.py, and the eval script all
+    read the endpoint from here instead of each calling getenv."""
+
+    base_url: str
+    model: str
+    api_key: str | None
+    is_local: bool
+
+    @property
+    def chat_completions_url(self) -> str:
+        return f"{self.base_url}/chat/completions"
+
+
+def _is_local_host(host: str) -> bool:
+    """True when the endpoint is unreachable from outside this machine or the
+    network it sits on. Covers loopback, private ranges, and single-label names
+    such as the `ollama` service on a compose network."""
+    normalized = host.strip("[]").lower()
+    if not normalized:
+        return False
+    if normalized in _LOOPBACK_NAMES or normalized.endswith(".localhost"):
+        return True
+    if normalized.endswith(".local"):
+        return True
+    try:
+        address = ipaddress.ip_address(normalized)
+    except ValueError:
+        # A name with no dot only resolves on a container network or a LAN.
+        return "." not in normalized
+    return address.is_loopback or address.is_unspecified or address.is_private
+
+
+def _normalize_base_url(raw: str) -> str:
+    candidate = raw.strip()
+    parts = urlsplit(candidate)
+    if not candidate or parts.scheme not in ("http", "https") or not parts.hostname:
+        raise ValueError(
+            f"Vision base URL {raw!r} is not a usable endpoint. Set OPENAI_BASE_URL "
+            "to a full http(s) URL such as http://localhost:11434/v1."
+        )
+    return candidate.rstrip("/")
+
+
+def resolve_vision_config(
+    environ: Mapping[str, str] | None = None,
+    *,
+    base_url: str | None = None,
+    model: str | None = None,
+    api_key: str | None = None,
+) -> VisionConfig:
+    """Pick the effective provider. Explicit arguments beat the environment,
+    which beats the defaults. A local endpoint falls back to a local model name
+    because gpt-4o-mini does not exist on Ollama."""
+    env = os.environ if environ is None else environ
+    resolved_url = _normalize_base_url(
+        base_url or env.get("OPENAI_BASE_URL") or DEFAULT_BASE_URL
+    )
+    is_local = _is_local_host(urlsplit(resolved_url).hostname or "")
+    resolved_model = (
+        model
+        or env.get("OPENAI_MODEL")
+        or (DEFAULT_LOCAL_MODEL if is_local else DEFAULT_HOSTED_MODEL)
+    ).strip()
+    if not resolved_model:
+        raise ValueError(
+            "Vision model name is empty. Set OPENAI_MODEL to a model the "
+            "endpoint serves, such as 'llava' or 'gpt-4o-mini'."
+        )
+    return VisionConfig(
+        base_url=resolved_url,
+        model=resolved_model,
+        api_key=api_key or env.get("OPENAI_API_KEY") or None,
+        is_local=is_local,
+    )
+
+
+CONFIG = resolve_vision_config()
+
+API_KEY = CONFIG.api_key
 if API_KEY:
     print(f"[vision] OPENAI_API_KEY found ({len(API_KEY)} chars)")
+elif CONFIG.is_local:
+    print("[vision] OPENAI_API_KEY unset, local endpoint so no key is needed")
 else:
-    print("[vision] ⚠️  OPENAI_API_KEY is NOT SET — AI analysis will fail!")
+    print("[vision] ⚠️  OPENAI_API_KEY is NOT SET, hosted analysis will fail!")
 
-API_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-API_URL = API_BASE_URL + "/chat/completions"
-MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+API_BASE_URL = CONFIG.base_url
+API_URL = CONFIG.chat_completions_url
+MODEL = CONFIG.model
+print(f"[vision] endpoint {API_URL} model {MODEL}")
 
 # load reference images at startup (this took me like 4 tries omg)
 REF_GOOD = []
@@ -94,28 +189,18 @@ You are watching a CNC router or mill. Look at the cutting area and workpiece.
 }
 
 
-async def analyze_image(machine_type, image_base64, api_key=None):
+async def analyze_image(machine_type, image_base64, api_key=None, config=None):
     """
-    sends the image to gpt-4 and gets back what it thinks (fingers crossed it works lol)
-    lowkey gpt-4o-mini is goated for this kinda stuff
+    sends the image to the configured vision model and gets back what it thinks
+    (fingers crossed it works lol)
     """
-    # Try to find the key in order: passed arg > module-level var > os.environ
-    # This handles the case where .env wasn't loaded at module-import time
-    # (e.g., friend just cloned the repo and hasn't created .env yet)
-    key = api_key or API_KEY
-    if not key:
-        key = os.environ.get("OPENAI_API_KEY")
-    if not key:
-        # One more try: maybe .env exists but didn't load. Try loading it now.
-        _try_load = Path(__file__).parent.parent / ".env"
-        if _try_load.exists():
-            load_dotenv(_try_load)
-            key = os.environ.get("OPENAI_API_KEY")
-    if not key:
+    cfg = config or CONFIG
+    key = api_key or cfg.api_key
+    if not key and not cfg.is_local:
         return {
             "status": "unknown",
             "confidence": 0.0,
-            "observation": "No API key found. Copy backend/.env.example to backend/.env and fill in your OPENAI_API_KEY.",
+            "observation": "No API key found. Copy backend/.env.example to backend/.env and fill in your OPENAI_API_KEY, or point OPENAI_BASE_URL at a local endpoint.",
             "probable_cause": "OPENAI_API_KEY environment variable is missing or empty",
             "recommended_action": "Run 'cp .env.example .env' (Mac/Linux) or 'copy .env.example .env' (Windows) in the backend/ folder, then edit .env with your API key. Then restart the server.",
             "severity": "low",
@@ -184,16 +269,19 @@ Severity can be: low, medium, high
         }
     )
 
+    # Ollama ignores the bearer token but still accepts the header, so only send
+    # it when we actually have one.
+    headers = {"Content-Type": "application/json"}
+    if key:
+        headers["Authorization"] = f"Bearer {key}"
+
     try:
         async with AsyncClient(timeout=30) as client:
             response = await client.post(
-                API_URL,
-                headers={
-                    "Authorization": f"Bearer {key}",
-                    "Content-Type": "application/json",
-                },
+                cfg.chat_completions_url,
+                headers=headers,
                 json={
-                    "model": MODEL,
+                    "model": cfg.model,
                     "messages": [{"role": "user", "content": content}],
                     "max_tokens": 300,
                     "temperature": 0.3,

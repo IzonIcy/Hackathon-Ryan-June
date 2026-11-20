@@ -19,6 +19,7 @@ from auth import BearerTokenMiddleware, get_api_token
 from database.db import init_db
 from rate_limit import PaidEndpointRateLimitMiddleware
 from routers import machines, jobs, frames, reports, sessions, seed
+from services.vision import CONFIG as VISION_CONFIG
 
 print("FabOps Sentinel booting up...")
 
@@ -36,15 +37,18 @@ else:
 
 # check if the API key was loaded (saves us from debugging later lol)
 # NOTE: never print key material here — boot logs get pasted into bug reports
-_api_key = os.getenv("OPENAI_API_KEY")
+_api_key = VISION_CONFIG.api_key
 if _api_key:
     print("[config] OPENAI_API_KEY loaded ✓")
+elif VISION_CONFIG.is_local:
+    print("[config] no OPENAI_API_KEY set, local vision endpoint needs none")
 else:
     print("[config] ⚠️  WARNING: OPENAI_API_KEY not found in .env!")
 print(
-    f"[config] OPENAI_BASE_URL = {os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')}"
+    f"[config] vision endpoint = {VISION_CONFIG.chat_completions_url} "
+    f"(local={VISION_CONFIG.is_local})"
 )
-print(f"[config] OPENAI_MODEL = {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')}")
+print(f"[config] vision model = {VISION_CONFIG.model}")
 
 
 @asynccontextmanager
@@ -124,8 +128,9 @@ def debug_env():
         "os_environ_api_key": env_key_status,
         "env_file_exists": Path(__file__).parent.joinpath(".env").exists(),
         "env_file_path": str(Path(__file__).parent / ".env"),
-        "base_url": vision.API_BASE_URL,
-        "model": vision.MODEL,
+        "base_url": vision.CONFIG.base_url,
+        "model": vision.CONFIG.model,
+        "local_endpoint": vision.CONFIG.is_local,
         "reference_images": f"{len(vision.REF_GOOD)} good, {len(vision.REF_DEFECT)} defect",
         "note": "Go to http://localhost:8000/api/debug/env in your browser to check",
     }
