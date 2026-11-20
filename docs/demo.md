@@ -53,6 +53,62 @@ option there.
    screencapture -x -R 0,400,1440,600 docs/images/demo.png
    ```
 
+## The video
+
+The screenshot shows one moment. The video shows the loop, which is what the project is: a camera watches a machine, a frame gets read, and a verdict shows up in the dashboard without anyone typing.
+
+This take needs a working vision endpoint. Without one the analysis step produces nothing and the video is a person clicking buttons, so record it on a machine where `OPENAI_BASE_URL` points at a server you can query. Check that first:
+
+```sh
+curl -s http://localhost:11434/v1/models | head -c 200
+```
+
+Then run the same two processes from the steps above, with the backend pointed at that endpoint, and record this:
+
+1. **0:00** The dashboard at `http://localhost:3000` with the machine list visible. Two machines already added, one of them a 3D printer.
+2. **0:08** Add a machine. Pick "3D printer", give it a name, save. It appears in the list.
+3. **0:18** Click into that machine and press **Watch It**. The session goes active and the page starts showing frames.
+4. **0:30** Let a frame analyze. The verdict card fills in and, if the frame reads as a defect, an incident appears in the feed. Do not click **Analyze Now** here; the point is that it happened on its own.
+5. **0:42** Navigate to `/incidents` and show the row for the incident that just landed.
+6. **0:52** Navigate to `/analytics` and hold on the charts. The incident from this take is in the counts.
+
+Stop the capture after the hold. If the verdict card stays empty at 0:40, the endpoint is not answering and the take is dead.
+
+### Recording and checking it
+
+Record the browser window rather than the screen, so no other tab can end up in the file. Save this as `/tmp/winid.swift` to look the id up:
+
+```swift
+import CoreGraphics
+import Foundation
+let needle = CommandLine.arguments[1]
+let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+for w in list where (w[kCGWindowOwnerName as String] as? String ?? "").contains(needle) {
+    print(w[kCGWindowNumber as String] as? Int ?? 0)
+}
+```
+
+```sh
+swift /tmp/winid.swift Safari
+screencapture -v -l"$(swift /tmp/winid.swift Safari | head -1)" demo.mov
+```
+
+The file's duration says nothing about whether its frames are live. Pull frames and look at them:
+
+```sh
+for t in 5 12 22 34 46 54; do
+    ffmpeg -loglevel error -ss "$t" -i demo.mov -frames:v 1 "frame-$t.png" -y
+done
+```
+
+The frame at 34 seconds must show a filled verdict card, and the last one must show the analytics charts. A repeated tail means the capture froze.
+
+```sh
+ffmpeg -i demo.mov -c:v libx264 -pix_fmt yuv420p -crf 28 -an demo.mp4
+```
+
+Upload it through the GitHub issue composer and paste the `user-attachments` URL on its own line under "How it works".
+
 ## What the repo carries now
 
 `docs/images/demo.png` is a real capture of the dashboard served by `next start`

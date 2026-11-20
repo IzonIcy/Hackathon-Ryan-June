@@ -10,7 +10,7 @@ docker compose up --build
 
 ![The dashboard after a monitoring session starts, showing one monitor named Deploy, seven active sessions, and a recent-activity feed](docs/images/demo.png)
 
-The capture above is the dashboard with a seeded demo session. The vision verdicts need an API key, so the feed reads "everything fine" rather than a real warning. [docs/demo.md](docs/demo.md) has the full steps, including the one frame analysis that fills the feed with a real verdict.
+The capture above is the dashboard with a seeded demo session. The vision verdicts need an API key, so the feed reads "everything fine" rather than a real warning. [docs/demo.md](docs/demo.md) has the full steps for a shot with a real verdict, and for a sixty second recording of the whole loop, which needs a vision endpoint and has not been shot.
 
 ## How it works
 
