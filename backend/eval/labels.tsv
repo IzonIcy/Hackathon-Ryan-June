@@ -1,0 +1,25 @@
+# FabOps Sentinel vision eval labels.
+#
+# 12 frames. That is every image in backend/reference_images/ at the time of
+# writing. The brief asked for 20; the repo holds 12, so this file has 12 and no
+# frames were synthesized to reach a number.
+#
+# label is normal or defect, read from the filename tokens:
+#   spagheti  -> defect   (spaghetti failure)
+#   error     -> defect   (failed print)
+#   part      -> normal when neither token above appears
+# Severity (warning vs stop) is not encoded in the filenames, so it is not
+# scored. Any warning or stop verdict counts as defect.
+frame	label
+000_extrusor_part_spagheti.jpg	defect
+003_part.jpg	normal
+005_part.jpg	normal
+007_error_extrusor_part.jpg	defect
+008_error_extrusor_part_spagheti.jpg	defect
+010_spagheti.jpg	defect
+017_extrusor_part.jpg	normal
+021_error_spagheti.jpg	defect
+023_part_spagheti.jpg	defect
+026_spagheti.jpg	defect
+028_error_extrusor_part_spagheti.jpg	defect
+037_extrusor_part.jpg	normal
