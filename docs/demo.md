@@ -76,6 +76,10 @@ Stop the capture after the hold. If the verdict card stays empty at 0:40, the en
 
 ### Recording and checking it
 
+**Do not pass `-V`.** `screencapture -V <seconds>` is what produced the frozen tail described above: the file reports its full length while the last stretch repeats one frame. Start the recording with no duration limit and stop it with `kill -INT` instead.
+
+`ffmpeg` is not installed on the machine these were written on. [LumiComp's docs/demo.md](https://github.com/IzonIcy/LumiComp/blob/main/docs/demo.md) carries Swift replacements for both jobs, frame extraction and trimming, which work anywhere a Swift toolchain does.
+
 Record the browser window rather than the screen, so no other tab can end up in the file. Save this as `/tmp/winid.swift` to look the id up:
 
 ```swift
@@ -97,14 +101,14 @@ The file's duration says nothing about whether its frames are live. Pull frames 
 
 ```sh
 for t in 5 12 22 34 46 54; do
-    ffmpeg -loglevel error -ss "$t" -i demo.mov -frames:v 1 "frame-$t.png" -y
+    swift /tmp/frame.swift demo.mov "frame-$t.png" "$t"
 done
 ```
 
 The frame at 34 seconds must show a filled verdict card, and the last one must show the analytics charts. A repeated tail means the capture froze.
 
 ```sh
-ffmpeg -i demo.mov -c:v libx264 -pix_fmt yuv420p -crf 28 -an demo.mp4
+swift /tmp/clip.swift demo.mov demo.mp4 0 56
 ```
 
 Upload it through the GitHub issue composer and paste the `user-attachments` URL on its own line under "How it works".
