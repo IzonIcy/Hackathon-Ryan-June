@@ -1,10 +1,15 @@
-# One-command local stack: backend + frontend + dashboard.
+# One-command local stack: backend + frontend + dashboard + local vision.
 #
 #   docker compose up --build
+#   docker compose exec ollama ollama pull llava
 #
-# Backend needs an .env in backend/ (copy from backend/.env.example) with at
-# least OPENAI_API_KEY for AI analysis; Twilio keys are optional (SMS alerts
-# disable themselves without them).
+# Backend needs an .env in backend/ (copy from backend/.env.example). Twilio
+# keys are optional (SMS alerts disable themselves without them).
+#
+# Vision points at the `ollama` service by default, so no frame leaves the
+# machine and no API key is needed. Export OPENAI_BASE_URL and OPENAI_MODEL to
+# use a hosted provider instead; those values win over backend/.env because
+# compose interpolates them before the env_file is loaded.
 
 services:
   backend:
@@ -21,6 +26,10 @@ services:
       # The volume below mounts a directory; point the DB into it so data
       # actually survives container recreates.
       - FABOPS_DB_PATH=/app/database/fabops.db
+      # Local vision. The ollama service name only resolves on this compose
+      # network, so vision.py treats it as a local endpoint.
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-http://ollama:11434/v1}
+      - OPENAI_MODEL=${OPENAI_MODEL:-llava}
     volumes:
       - ./backend:/app
       # Keep the SQLite database across container recreates.
@@ -28,6 +37,17 @@ services:
     command: sh -c "pip install --no-cache-dir -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:0.40.16
+    volumes:
+      # Model weights live here so they survive container recreates.
+      - ollama-models:/root/.ollama
+    ports:
+      # Lets a backend running outside compose reach http://localhost:11434/v1.
+      - "11434:11434"
 
   frontend:
     image: node:22-slim
@@ -53,3 +73,4 @@ services:
 
 volumes:
   fabops-data:
+  ollama-models:
